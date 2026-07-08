@@ -24,7 +24,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useMemo } = React;
 
     // --- Ícones (Substituindo a biblioteca Lucide por SVGs inline para arquivo único) ---
     const IconWrapper = ({ children, size = 24, className = "" }) => (
@@ -47,18 +47,14 @@
     const MapPin = (p) => <IconWrapper {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconWrapper>;
     const Phone = (p) => <IconWrapper {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></IconWrapper>;
     const Mail = (p) => <IconWrapper {...p}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></IconWrapper>;
+    const Filter = (p) => <IconWrapper {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconWrapper>;
 
     function App() {
       const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-      const topProdutos = [
-        { id: 1, nome: "Suporte Headset", preco: "R$ 45,90", tag: "Mais Vendido", img: "https://placehold.co/400x400/292524/a8a29e?text=Headset" },
-        { id: 2, nome: "Vaso Geométrico", preco: "R$ 65,00", tag: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Vaso" },
-        { id: 3, nome: "Action Figure Busto", preco: "R$ 120,00", tag: "Colecionável", img: "https://placehold.co/400x400/292524/a8a29e?text=Busto" },
-        { id: 4, nome: "Suporte Controle", preco: "R$ 35,00", tag: "Gamer", img: "https://placehold.co/400x400/292524/a8a29e?text=Controle" },
-        { id: 5, nome: "Organizador", preco: "R$ 55,00", tag: "Utilitário", img: "https://placehold.co/400x400/292524/a8a29e?text=Mesa" },
-      ];
+      const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
 
+      // --- DADOS DA HOME ---
       const b2bProdutos = [
         { id: 1, nome: "Chaveiros com Logo (Lote 100un)", descricao: "Ideal para eventos e brindes de final de ano.", tag: "Brinde", img: "https://placehold.co/600x400/292524/a8a29e?text=Lote+Chaveiros" },
         { id: 2, nome: "Troféu Corporativo", descricao: "Premiações internas e hackathons. Design exclusivo.", tag: "Premiação", img: "https://placehold.co/600x400/292524/a8a29e?text=Trofeu+Personalizado" },
@@ -66,39 +62,39 @@
         { id: 4, nome: "Peças de Reposição Específicas", descricao: "Engrenagens e suportes mecânicos fora de linha.", tag: "Manutenção", img: "https://placehold.co/600x400/292524/a8a29e?text=Peca+Tecnica" },
       ];
 
-      // Simulação de array que será preenchido pelos dados do painel admin (Prévia do Catálogo)
       const previewProdutos = [
-        { id: 101, nome: "Action Figure Cyberpunk", preco: "R$ 149,90", categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Figure+Cyberpunk" },
-        { id: 102, nome: "Suporte para Notebook", preco: "R$ 75,00", categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+Notebook" },
-        { id: 103, nome: "Luminária Lua 3D", preco: "R$ 89,90", categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Luminaria+Lua" },
-        { id: 104, nome: "Vaso Cachepot", preco: "R$ 45,00", categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Vaso+Cachepot" },
-        { id: 105, nome: "Suporte Headset RGB", preco: "R$ 60,00", categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+RGB" },
-        { id: 106, nome: "Miniatura RPG Orc", preco: "R$ 25,00", categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Miniatura+Orc" },
-        { id: 107, nome: "Organizador Gaveta", preco: "R$ 30,00", categoria: "Utilitário", img: "https://placehold.co/400x400/292524/a8a29e?text=Organizador" },
-        { id: 108, nome: "Chaveiro Personalizado", preco: "R$ 15,00", categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Chaveiro" },
+        { id: 101, nome: "Action Figure Cyberpunk", preco: 149.90, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Figure+Cyberpunk" },
+        { id: 102, nome: "Suporte para Notebook", preco: 75.00, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+Notebook" },
+        { id: 103, nome: "Luminária Lua 3D", preco: 89.90, categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Luminaria+Lua" },
+        { id: 104, nome: "Vaso Cachepot", preco: 45.00, categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Vaso+Cachepot" },
+        { id: 105, nome: "Suporte Headset RGB", preco: 60.00, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+RGB" },
+        { id: 106, nome: "Miniatura RPG Orc", preco: 25.00, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Miniatura+Orc" },
+        { id: 107, nome: "Organizador Gaveta", preco: 30.00, categoria: "Utilitário", img: "https://placehold.co/400x400/292524/a8a29e?text=Organizador" },
+        { id: 108, nome: "Chaveiro Personalizado", preco: 15.00, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Chaveiro" },
       ];
 
       return (
         <React.Fragment>
-          {/* Navegação */}
+          {/* NAVEGAÇÃO GLOBAL */}
           <nav className="sticky top-0 z-50 bg-stone-950/90 backdrop-blur-md border-b border-stone-800 px-6 py-4 flex justify-between items-center transition-all duration-300">
             <div className="flex items-center gap-3">
-              {/* Se a imagem falhar, exibimos um placeholder estilizado */}
-              <img 
-                src="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" 
-                alt="2LN 3D Logo" 
-                className="h-14 w-auto object-contain mix-blend-screen"
-                onError={(e) => {
-                  e.target.onerror = null; 
-                  e.target.src = "https://placehold.co/150x56/292524/a8a29e?text=2LN+3D+Logo";
-                }}
-              />
+              <a href="#">
+                <img 
+                  src="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" 
+                  alt="2LN 3D Logo" 
+                  className="h-14 w-auto object-contain mix-blend-screen"
+                  onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = "https://placehold.co/150x56/292524/a8a29e?text=2LN+3D+Logo";
+                  }}
+                />
+              </a>
             </div>
 
             <div className="hidden lg:flex items-center gap-8 text-sm font-semibold text-stone-400">
               <a href="#destaques" className="hover:text-amber-500 transition-colors">Destaques</a>
               <a href="#diferencial" className="hover:text-amber-500 transition-colors">Diferenciais</a>
-              <a href="#catalogo" className="hover:text-amber-500 transition-colors">Catálogo</a>
+              <a href="catalogo.html" className="hover:text-amber-500 transition-colors">Catálogo Completo</a>
               <a href="#solucoes-empresariais" className="text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-1"><Building2 size={16}/> Soluções Empresariais</a>
               <a href="#orcamento" className="hover:text-amber-500 transition-colors">Orçamentos</a>
             </div>
@@ -120,7 +116,7 @@
             <div className="lg:hidden fixed inset-0 top-[88px] z-40 bg-stone-950 border-b border-stone-800 px-6 py-4 flex flex-col gap-4">
                 <a href="#destaques" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Destaques</a>
                 <a href="#diferencial" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Diferenciais</a>
-                <a href="#catalogo" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Catálogo</a>
+                <a href="catalogo.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Catálogo Completo</a>
                 <a href="#solucoes-empresariais" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-2"><Building2 size={20}/> Soluções Empresariais</a>
                 <a href="#orcamento" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Orçamentos</a>
             </div>
@@ -141,7 +137,7 @@
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#catalogo" className="bg-stone-800 hover:bg-stone-700 text-stone-50 px-8 py-3 rounded font-bold transition-colors border border-stone-700 flex items-center justify-center gap-2">
+                <a href="catalogo.html" className="bg-stone-800 hover:bg-stone-700 text-stone-50 px-8 py-3 rounded font-bold transition-colors border border-stone-700 flex items-center justify-center gap-2">
                   Ver Catálogo
                 </a>
                 <a href="#solucoes-empresariais" className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-3 rounded font-bold transition-colors shadow-[0_0_15px_rgba(180,83,9,0.4)] flex items-center justify-center gap-2">
@@ -151,7 +147,7 @@
             </div>
           </section>
 
-          {/* Destaques */}
+          {/* Destaques Carrossel */}
           <section id="destaques" className="px-6 py-16 bg-stone-900 border-b border-stone-800">
             <div className="max-w-7xl mx-auto">
               <div className="flex justify-between items-end mb-8">
@@ -170,18 +166,18 @@
               </div>
 
               <div id="carrossel" className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
-                {topProdutos.map((produto) => (
+                {previewProdutos.map((produto) => (
                   <div key={produto.id} className="snap-start min-w-[260px] md:min-w-[280px] bg-stone-950 rounded-lg border border-stone-800 overflow-hidden group flex-shrink-0 hover:border-amber-700/30 transition-colors">
                     <div className="aspect-square bg-stone-900 relative flex items-center justify-center border-b border-stone-800 overflow-hidden">
                       <img src={produto.img} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-50 group-hover:opacity-80" />
                       <div className="absolute top-3 left-3 bg-amber-900/80 text-amber-100 text-xs font-bold px-2 py-1 rounded border border-amber-700">
-                        {produto.tag}
+                        Mais Vendido
                       </div>
                     </div>
                     <div className="p-5">
                       <h3 className="font-semibold text-lg text-stone-100 mb-2">{produto.nome}</h3>
                       <div className="flex justify-between items-center">
-                        <span className="font-bold text-xl text-amber-500">{produto.preco}</span>
+                        <span className="font-bold text-xl text-amber-500">{formatarPreco(produto.preco)}</span>
                         <button className="text-stone-50 bg-stone-800 hover:bg-stone-700 px-3 py-1.5 rounded text-sm font-medium transition-colors">
                           Adicionar
                         </button>
@@ -229,45 +225,45 @@
             </div>
           </section>
 
-          {/* Catálogo Varejo */}
-          <section id="catalogo" className="px-6 py-20 bg-stone-900">
+          {/* Catálogo Preview Home */}
+          <section id="catalogo-preview" className="px-6 py-20 bg-stone-900">
             <div className="max-w-7xl mx-auto">
               <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
                 <div>
-                  <h2 className="text-3xl font-bold text-stone-50">Catálogo Varejo</h2>
+                  <h2 className="text-3xl font-bold text-stone-50">Novidades Varejo</h2>
                   <p className="text-stone-400 mt-1">Peças a pronta entrega e sob demanda padrão.</p>
                 </div>
                 <div className="flex gap-2 bg-stone-950 p-1 rounded-lg border border-stone-800">
-                <button className="px-5 py-2 bg-stone-800 text-stone-50 text-sm font-medium rounded shadow">Todos</button>
-                <button className="px-5 py-2 text-stone-400 hover:text-stone-50 text-sm font-medium rounded transition-colors">Setup</button>
-                <button className="px-5 py-2 text-stone-400 hover:text-stone-50 text-sm font-medium rounded transition-colors">Geek</button>
+                  <a href="catalogo.html" className="px-5 py-2 text-stone-400 hover:text-stone-50 text-sm font-medium rounded transition-colors flex items-center gap-2">
+                    Abrir Catálogo <ArrowRight size={16}/>
+                  </a>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                {previewProdutos.slice(0, 4).map((produto) => (
+                  <a href="catalogo.html" key={produto.id} className="bg-stone-950 rounded-lg border border-stone-800 overflow-hidden group block hover:border-amber-700/50 transition-colors">
+                    <div className="aspect-square bg-stone-900 relative flex items-center justify-center overflow-hidden">
+                      <img src={produto.img} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60 group-hover:opacity-100" />
+                      <div className="absolute top-2 right-2 bg-stone-950/80 text-stone-300 text-[10px] uppercase font-bold px-2 py-1 rounded border border-stone-800">
+                        {produto.categoria}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium text-sm text-stone-200 line-clamp-1 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
+                      <p className="font-bold text-lg text-stone-50 mt-1">{formatarPreco(produto.preco)}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+              
+              <div className="mt-12 text-center">
+                <a href="catalogo.html" className="px-8 py-3 border border-amber-700 text-amber-500 hover:text-stone-50 hover:bg-amber-700 rounded font-bold transition-colors inline-block">
+                  IR PARA O CATÁLOGO COMPLETO
+                </a>
               </div>
             </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {previewProdutos.map((produto) => (
-                <div key={produto.id} className="bg-stone-950 rounded-lg border border-stone-800 overflow-hidden group cursor-pointer hover:border-amber-700/50 transition-colors">
-                  <div className="aspect-square bg-stone-900 relative flex items-center justify-center overflow-hidden">
-                    <img src={produto.img} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60 group-hover:opacity-100" />
-                    <div className="absolute top-2 right-2 bg-stone-950/80 text-stone-300 text-[10px] uppercase font-bold px-2 py-1 rounded border border-stone-800">
-                      {produto.categoria}
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-medium text-sm text-stone-200 line-clamp-1 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
-                    <p className="font-bold text-lg text-stone-50 mt-1">{produto.preco}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-12 text-center">
-              <button className="px-8 py-3 border border-stone-700 text-stone-300 hover:text-stone-50 hover:bg-stone-800 rounded font-medium transition-colors">
-                Ver Catálogo Completo
-              </button>
-            </div>
-          </div>
-        </section>
+          </section>
 
           {/* Soluções Empresariais B2B */}
           <section id="solucoes-empresariais" className="px-6 py-20 bg-stone-950 border-t border-stone-800 relative overflow-hidden">
@@ -318,13 +314,7 @@
               </p>
               
               <button 
-                onClick={() => {
-                  const el = document.createElement('div');
-                  el.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4';
-                  el.innerHTML = '<div class="bg-stone-900 border border-stone-800 p-8 rounded-xl max-w-md text-center"><h3 class="text-xl font-bold text-stone-50 mb-2">Simulação de Rota</h3><p class="text-stone-400 mb-6">Esta ação levaria o cliente para a página /orcamento com o formulário detalhado que configuramos no passo anterior.</p><button id="close-modal-btn" class="bg-stone-800 text-stone-50 px-6 py-2 rounded font-medium hover:bg-stone-700">Entendi</button></div>';
-                  document.body.appendChild(el);
-                  document.getElementById('close-modal-btn').onclick = () => document.body.removeChild(el);
-                }}
+                onClick={() => alert("Simulação: Abriria o formulário de orçamentos ou modal.")}
                 className="inline-flex items-center justify-center bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg shadow-amber-900/20"
               >
                 Acessar Formulário de Orçamento
@@ -333,20 +323,22 @@
             </div>
           </section>
 
-          {/* Footer */}
+          {/* RODAPÉ GLOBAL */}
           <footer className="bg-black text-stone-400 py-16 px-6 border-t border-stone-800">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
               <div className="col-span-1 md:col-span-1">
                 <div className="flex items-center gap-3 mb-6 text-stone-50">
-                  <img 
-                    src="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" 
-                    alt="2LN 3D Logo" 
-                    className="h-16 w-auto object-contain mix-blend-screen" 
-                    onError={(e) => {
-                      e.target.onerror = null; 
-                      e.target.src = "https://placehold.co/150x56/292524/a8a29e?text=2LN+3D+Logo";
-                    }}
-                  />
+                  <a href="#">
+                    <img 
+                      src="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" 
+                      alt="2LN 3D Logo" 
+                      className="h-16 w-auto object-contain mix-blend-screen" 
+                      onError={(e) => {
+                        e.target.onerror = null; 
+                        e.target.src = "https://placehold.co/150x56/292524/a8a29e?text=2LN+3D+Logo";
+                      }}
+                    />
+                  </a>
                 </div>
                 <p className="text-sm text-stone-500 mb-6 leading-relaxed">
                   Estúdio de impressão 3D especializado em FDM. Focados em entregar durabilidade, precisão e soluções reais para clientes finais e empresas.
@@ -362,7 +354,7 @@
                 <h4 className="text-stone-50 font-bold mb-6 uppercase tracking-wider text-sm">Loja</h4>
                 <ul className="space-y-3 text-sm font-medium">
                   <li><a href="#destaques" className="hover:text-amber-500 transition-colors">Mais Vendidos</a></li>
-                  <li><a href="#catalogo" className="hover:text-amber-500 transition-colors">Catálogo Completo</a></li>
+                  <li><a href="catalogo.html" className="hover:text-amber-500 transition-colors">Catálogo Completo</a></li>
                   <li><a href="#" className="hover:text-amber-500 transition-colors">Acompanhar Pedido</a></li>
                   <li><a href="#" className="hover:text-amber-500 transition-colors">Trocas e Devoluções</a></li>
                 </ul>
