@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Perfil - 2LN 3D</title>
+  <link rel="icon" href="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" type="image/jpeg">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="bg-stone-950 text-stone-300 font-sans selection:bg-amber-700 selection:text-white min-h-screen flex flex-col">
+  
+  <div id="root" class="flex-1 flex flex-col"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // --- Ícones ---
+    const IconWrapper = ({ children, size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {children}
+      </svg>
+    );
+
+    const Menu = (p) => <IconWrapper {...p}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconWrapper>;
+    const X = (p) => <IconWrapper {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
+    const ShoppingCart = (p) => <IconWrapper {...p}><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></IconWrapper>;
+    const User = (p) => <IconWrapper {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconWrapper>;
+    const Building2 = (p) => <IconWrapper {...p}><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></IconWrapper>;
+    const Instagram = (p) => <IconWrapper {...p}><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></IconWrapper>;
+    const MapPin = (p) => <IconWrapper {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconWrapper>;
+    const Phone = (p) => <IconWrapper {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></IconWrapper>;
+    const Mail = (p) => <IconWrapper {...p}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></IconWrapper>;
+    const Package = (p) => <IconWrapper {...p}><line x1="16.5" x2="7.5" y1="9.4" y2="14.6"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></IconWrapper>;
+    const Heart = (p) => <IconWrapper {...p}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></IconWrapper>;
+    const FileText = (p) => <IconWrapper {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></IconWrapper>;
+    const LogOut = (p) => <IconWrapper {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></IconWrapper>;
+
+    // Componente de Input Reutilizável
+    const InputField = ({ label, type = "text", placeholder, defaultValue }) => (
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-stone-400">{label}</label>
+        <input 
+          type={type} 
+          placeholder={placeholder} 
+          defaultValue={defaultValue}
+          className="bg-stone-900 border border-stone-800 text-stone-200 rounded-lg p-3 outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-all"
+        />
+      </div>
+    );
+
+    function App() {
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [activeTab, setActiveTab] = useState('dados'); // dados, empresarial, pedidos, carrinho, favoritos, orcamentos
+      const [isEmpresarial, setIsEmpresarial] = useState(false);
+
+      const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+
+      // --- MOCKS DE DADOS ---
+      const mockPedidos = [
+        { id: '#1045', data: '12/07/2026', status: 'Entregue', statusColor: 'text-green-500 bg-green-500/10 border-green-500/20', total: 145.90, itens: 'Action Figure Cyberpunk, Chaveiro Geek' },
+        { id: '#1032', data: '28/06/2026', status: 'Em Produção', statusColor: 'text-amber-500 bg-amber-500/10 border-amber-500/20', total: 89.90, itens: 'Luminária Lua 3D' },
+      ];
+
+      const mockOrcamentos = [
+        { id: '#ORC-089', data: '05/07/2026', projeto: 'Lote 100 Troféus Hackathon', status: 'Aguardando Aprovação', statusColor: 'text-amber-500 bg-amber-500/10 border-amber-500/20', valor: 'R$ 3.500,00' },
+        { id: '#ORC-082', data: '15/05/2026', projeto: 'Peça de Reposição Engrenagem', status: 'Concluído', statusColor: 'text-green-500 bg-green-500/10 border-green-500/20', valor: 'R$ 250,00' },
+      ];
+
+      const mockFavoritos = [
+        { id: 102, nome: "Suporte para Notebook", preco: 75.00, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+Notebook" },
+        { id: 104, nome: "Vaso Cachepot", preco: 45.00, categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Vaso+Cachepot" },
+      ];
+
+      const mockCarrinho = [
+        { id: 105, nome: "Suporte Headset RGB", preco: 60.00, qtd: 1, img: "https://placehold.co/100x100/292524/a8a29e?text=Headset" },
+        { id: 106, nome: "Miniatura RPG Orc", preco: 25.00, qtd: 2, img: "https://placehold.co/100x100/292524/a8a29e?text=Orc" },
+      ];
+
+      // --- RENDERIZADORES DE ABAS ---
+      const renderTabDados = () => (
+        <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
+          <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Meus Dados Pessoais</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <InputField label="Nome Completo" defaultValue="João da Silva" />
+            <InputField label="CPF" defaultValue="123.456.789-00" />
+            <InputField label="E-mail" type="email" defaultValue="joao@exemplo.com" />
+            <InputField label="Telefone / WhatsApp" defaultValue="(43) 99999-8888" />
+          </div>
+
+          <h3 className="text-xl font-bold text-stone-50 mb-4">Endereço de Entrega</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <InputField label="CEP" defaultValue="86000-000" />
+            <div className="md:col-span-2"><InputField label="Logradouro" defaultValue="Avenida Higienópolis" /></div>
+            <InputField label="Número" defaultValue="1234" />
+            <InputField label="Complemento" defaultValue="Apto 52" />
+            <InputField label="Bairro" defaultValue="Centro" />
+            <div className="md:col-span-2"><InputField label="Cidade" defaultValue="Londrina" /></div>
+            <InputField label="Estado" defaultValue="PR" />
+          </div>
+
+          <h3 className="text-xl font-bold text-stone-50 mb-4">Segurança</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <InputField label="Nova Senha" type="password" placeholder="Deixe em branco para não alterar" />
+            <InputField label="Confirmar Nova Senha" type="password" placeholder="Deixe em branco para não alterar" />
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-stone-800">
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className={`w-12 h-6 rounded-full p-1 transition-colors ${isEmpresarial ? 'bg-amber-600' : 'bg-stone-800'}`}>
+                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${isEmpresarial ? 'translate-x-6' : 'translate-x-0'}`}></div>
+              </div>
+              <span className="text-sm font-medium text-stone-300 group-hover:text-stone-50 transition-colors">Ativar Perfil Empresarial (B2B)</span>
+            </label>
+            <button className="w-full sm:w-auto bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-3 rounded-lg font-bold transition-colors">
+              Salvar Alterações
+            </button>
+          </div>
+        </div>
+      );
+
+      const renderTabEmpresarial = () => (
+        <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8 relative overflow-hidden">
+          {!isEmpresarial && (
+            <div className="absolute inset-0 z-10 bg-stone-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+              <Building2 size={48} className="text-stone-600 mb-4" />
+              <h3 className="text-2xl font-bold text-stone-50 mb-2">Perfil Empresarial Desativado</h3>
+              <p className="text-stone-400 mb-6 max-w-md">Ative seu perfil empresarial na aba "Meus Dados" para preencher as informações da sua empresa e facilitar pedidos corporativos.</p>
+              <button onClick={() => { setIsEmpresarial(true); setActiveTab('empresarial'); }} className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-6 py-2 rounded-lg font-bold transition-colors">
+                Ativar Agora
+              </button>
+            </div>
+          )}
+          
+          <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Dados da Empresa</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <InputField label="CNPJ" placeholder="00.000.000/0000-00" />
+            <InputField label="Razão Social" placeholder="Sua Empresa LTDA" />
+            <InputField label="Inscrição Estadual" placeholder="Opcional" />
+            <InputField label="Nome do Responsável" placeholder="Pessoa de contato" />
+            <InputField label="E-mail Comercial" type="email" placeholder="contato@empresa.com.br" />
+            <InputField label="Telefone Fixo / Comercial" placeholder="(00) 0000-0000" />
+          </div>
+
+          <h3 className="text-xl font-bold text-stone-50 mb-4">Endereço Comercial</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <InputField label="CEP Comercial" placeholder="00000-000" />
+            <div className="md:col-span-2"><InputField label="Logradouro Comercial" placeholder="Rua / Avenida" /></div>
+            <InputField label="Número" />
+            <InputField label="Complemento" />
+            <InputField label="Bairro" />
+            <div className="md:col-span-2"><InputField label="Cidade" /></div>
+            <InputField label="Estado" />
+          </div>
+
+          <div className="flex justify-end pt-6 border-t border-stone-800">
+            <button className="w-full sm:w-auto bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-3 rounded-lg font-bold transition-colors">
+              Salvar Dados Empresariais
+            </button>
+          </div>
+        </div>
+      );
+
+      const renderTabPedidos = () => (
+        <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
+          <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Histórico de Pedidos</h2>
+          
+          <div className="space-y-4">
+            {mockPedidos.map((pedido, i) => (
+              <div key={i} className="border border-stone-800 rounded-lg p-5 hover:border-stone-700 transition-colors bg-stone-900/50">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                  <div>
+                    <span className="text-stone-400 text-sm">Pedido</span>
+                    <h3 className="text-lg font-bold text-stone-50">{pedido.id}</h3>
+                  </div>
+                  <div className="flex flex-col md:items-end">
+                    <span className="text-stone-400 text-sm">Data da Compra</span>
+                    <span className="font-medium text-stone-200">{pedido.data}</span>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold border ${pedido.statusColor}`}>
+                    {pedido.status}
+                  </div>
+                </div>
+                <div className="border-t border-stone-800 pt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="flex-1">
+                    <span className="text-stone-500 text-sm block mb-1">Itens:</span>
+                    <p className="text-sm text-stone-300">{pedido.itens}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-stone-500 text-sm block mb-1">Total:</span>
+                    <p className="font-bold text-lg text-amber-500">{formatarPreco(pedido.total)}</p>
+                  </div>
+                  <button className="text-amber-500 hover:text-amber-400 text-sm font-bold mt-2 md:mt-0 underline underline-offset-4">Ver Detalhes</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      const renderTabOrcamentos = () => (
+        <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-stone-800 pb-4 gap-4">
+            <h2 className="text-2xl font-bold text-stone-50">Meus Orçamentos</h2>
+            <a href="index.html#orcamento" className="bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded text-sm font-bold transition-colors border border-stone-700">
+              Solicitar Novo
+            </a>
+          </div>
+          
+          <div className="space-y-4">
+            {mockOrcamentos.map((orc, i) => (
+              <div key={i} className="border border-stone-800 rounded-lg p-5 hover:border-amber-900/30 transition-colors bg-stone-900/50">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-stone-400 text-sm">{orc.id}</span>
+                      <span className="text-stone-600 text-sm">•</span>
+                      <span className="text-stone-400 text-sm">{orc.data}</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-stone-50">{orc.projeto}</h3>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold border ${orc.statusColor}`}>
+                    {orc.status}
+                  </div>
+                </div>
+                <div className="border-t border-stone-800 pt-4 flex justify-between items-center">
+                  <div>
+                    <span className="text-stone-500 text-sm block mb-1">Proposta Comercial:</span>
+                    <p className="font-bold text-stone-200">{orc.valor}</p>
+                  </div>
+                  <button className="bg-stone-800 hover:bg-stone-700 text-stone-50 px-4 py-2 rounded text-sm font-medium transition-colors">
+                    Acessar Chat / Arquivos
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      const renderTabFavoritos = () => (
+        <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
+          <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Meus Favoritos</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {mockFavoritos.map((produto) => (
+              <div key={produto.id} className="bg-stone-900 rounded-lg border border-stone-800 overflow-hidden group flex flex-col hover:border-amber-700/50 transition-colors relative">
+                <button className="absolute top-2 right-2 z-10 w-8 h-8 bg-stone-950/80 rounded-full flex items-center justify-center text-red-500 hover:scale-110 transition-transform">
+                  <Heart size={16} fill="currentColor" />
+                </button>
+                <div className="aspect-square bg-stone-950 relative flex items-center justify-center overflow-hidden">
+                  <img src={produto.img} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
+                </div>
+                <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-stone-500 mb-1 block">{produto.categoria}</span>
+                    <h3 className="font-medium text-sm text-stone-200 line-clamp-2 mb-2 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
+                  </div>
+                  <div className="flex justify-between items-end mt-2">
+                    <span className="font-bold text-lg text-stone-50">{formatarPreco(produto.preco)}</span>
+                    <button className="w-8 h-8 flex items-center justify-center rounded bg-amber-700 hover:bg-amber-600 text-stone-50 transition-colors" title="Adicionar ao carrinho">
+                      <ShoppingCart size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      const renderTabCarrinho = () => {
+        const subtotal = mockCarrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+        return (
+          <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
+            <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Carrinho Atual</h2>
+            
+            <div className="flex flex-col lg:flex-row gap-8">
+              <div className="flex-1 space-y-4">
+                {mockCarrinho.map((item, i) => (
+                  <div key={i} className="flex gap-4 p-4 border border-stone-800 rounded-lg bg-stone-900/30 relative pr-10">
+                    <button className="absolute top-4 right-4 text-stone-500 hover:text-red-500 transition-colors">
+                      <X size={20} />
+                    </button>
+                    <div className="w-20 h-20 bg-stone-900 rounded overflow-hidden flex-shrink-0">
+                      <img src={item.img} alt={item.nome} className="w-full h-full object-cover opacity-80" />
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <h3 className="font-bold text-stone-200">{item.nome}</h3>
+                      <div className="flex justify-between items-center mt-2">
+                        <div className="flex items-center gap-3 bg-stone-950 border border-stone-800 rounded-md px-2 py-1">
+                          <button className="text-stone-400 hover:text-stone-50">-</button>
+                          <span className="text-sm font-bold w-4 text-center text-stone-200">{item.qtd}</span>
+                          <button className="text-stone-400 hover:text-stone-50">+</button>
+                        </div>
+                        <span className="font-bold text-amber-500">{formatarPreco(item.preco * item.qtd)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="w-full lg:w-80 flex-shrink-0">
+                <div className="bg-stone-900 border border-stone-800 rounded-lg p-6 sticky top-28">
+                  <h3 className="font-bold text-lg text-stone-50 mb-4">Resumo do Pedido</h3>
+                  <div className="space-y-3 mb-6">
+                    <div className="flex justify-between text-stone-400 text-sm">
+                      <span>Subtotal ({mockCarrinho.length} itens)</span>
+                      <span>{formatarPreco(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-stone-400 text-sm">
+                      <span>Frete</span>
+                      <span>A calcular</span>
+                    </div>
+                    <div className="border-t border-stone-800 pt-3 flex justify-between items-center">
+                      <span className="font-bold text-stone-200">Total Previsto</span>
+                      <span className="font-bold text-xl text-amber-500">{formatarPreco(subtotal)}</span>
+                    </div>
+                  </div>
+                  <button className="w-full bg-amber-700 hover:bg-amber-600 text-stone-50 py-3 rounded-lg font-bold transition-colors mb-3">
+                    Finalizar Compra
+                  </button>
+                  <a href="catalogo.html" className="block text-center text-sm text-stone-400 hover:text-amber-500 transition-colors">
+                    Continuar Comprando
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const tabs = [
+        { id: 'dados', label: 'Meus Dados', icon: User },
+        { id: 'empresarial', label: 'Perfil Empresarial', icon: Building2 },
+        { id: 'pedidos', label: 'Histórico de Pedidos', icon: Package },
+        { id: 'orcamentos', label: 'Meus Orçamentos', icon: FileText },
+        { id: 'favoritos', label: 'Favoritos', icon: Heart },
+        { id: 'carrinho', label: 'Carrinho Atual', icon: ShoppingCart },
+      ];
+
+      return (
+        <React.Fragment>
+          {/* Navegação Global */}
+          <nav className="sticky top-0 z-50 bg-stone-950/90 backdrop-blur-md border-b border-stone-800 px-6 py-4 flex justify-between items-center transition-all duration-300">
+            <div className="flex items-center gap-3">
+              <a href="index.html">
+                <img 
+                  src="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" 
+                  alt="2LN 3D Logo" 
+                  className="h-14 w-auto object-contain mix-blend-screen"
+                  onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = "https://placehold.co/150x56/292524/a8a29e?text=2LN+3D+Logo";
+                  }}
+                />
+              </a>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-8 text-sm font-semibold text-stone-400">
+              <a href="index.html#destaques" className="hover:text-amber-500 transition-colors">Destaques</a>
+              <a href="index.html#diferencial" className="hover:text-amber-500 transition-colors">Diferenciais</a>
+              <a href="catalogo.html" className="hover:text-amber-500 transition-colors">Catálogo Completo</a>
+              <a href="index.html#solucoes-empresariais" className="text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-1"><Building2 size={16}/> Soluções Empresariais</a>
+              <a href="index.html#orcamento" className="hover:text-amber-500 transition-colors">Orçamentos</a>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-6">
+              <a href="#" className="text-amber-500 transition-colors" title="Meu Perfil">
+                <User size={22} />
+              </a>
+              <button onClick={() => setActiveTab('carrinho')} className="text-stone-400 hover:text-amber-500 transition-colors relative" title="Carrinho de Compras">
+                <ShoppingCart size={22} />
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">2</span>
+              </button>
+            </div>
+
+            <div className="lg:hidden flex items-center gap-4">
+              <button onClick={() => setActiveTab('carrinho')} className="text-stone-400 relative">
+                <ShoppingCart size={22} />
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">2</span>
+              </button>
+              <button className="p-2 text-stone-400" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </nav>
+
+          {/* Menu Mobile Global */}
+          {isMenuOpen && (
+            <div className="lg:hidden fixed inset-0 top-[88px] z-40 bg-stone-950 border-b border-stone-800 px-6 py-4 flex flex-col gap-4">
+                <a href="index.html#destaques" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Destaques</a>
+                <a href="index.html#diferencial" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Diferenciais</a>
+                <a href="catalogo.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Catálogo Completo</a>
+                <a href="index.html#solucoes-empresariais" className="text-lg font-semibold text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-2"><Building2 size={20}/> Soluções Empresariais</a>
+                <a href="index.html#orcamento" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Orçamentos</a>
+            </div>
+          )}
+
+          {/* Layout do Perfil */}
+          <main className="flex-1 px-4 sm:px-6 py-8 md:py-12 bg-stone-900">
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+              
+              {/* Menu Lateral do Perfil */}
+              <aside className="w-full lg:w-72 flex-shrink-0">
+                <div className="bg-stone-950 border border-stone-800 rounded-xl overflow-hidden lg:sticky lg:top-28">
+                  {/* Cabeçalho do Perfil (Resumo) */}
+                  <div className="p-6 border-b border-stone-800 bg-stone-900/50 flex items-center gap-4">
+                    <div className="w-14 h-14 bg-amber-900/40 border border-amber-700/50 rounded-full flex items-center justify-center text-amber-500 flex-shrink-0">
+                      <User size={28} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-stone-50 truncate">João da Silva</h3>
+                      <p className="text-xs text-stone-400 truncate">joao@exemplo.com</p>
+                      {isEmpresarial && <span className="inline-block mt-1 bg-stone-800 text-stone-300 text-[10px] font-bold px-2 py-0.5 rounded border border-stone-700 uppercase">Conta B2B Ativa</span>}
+                    </div>
+                  </div>
+
+                  {/* Links de Navegação (Scroll horizontal no mobile, vertical no desktop) */}
+                  <div className="flex overflow-x-auto lg:flex-col p-2 lg:p-4 gap-1 scrollbar-hide snap-x">
+                    {tabs.map(tab => {
+                      const Icon = tab.icon;
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`snap-start whitespace-nowrap flex-shrink-0 lg:w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                            isActive 
+                              ? 'bg-amber-900/20 text-amber-500 font-bold border border-amber-900/50' 
+                              : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800 border border-transparent'
+                          }`}
+                        >
+                          <Icon size={18} className={isActive ? "text-amber-500" : "text-stone-500"} />
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                    
+                    <div className="hidden lg:block my-2 border-t border-stone-800"></div>
+                    
+                    <button className="snap-start whitespace-nowrap flex-shrink-0 lg:w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors border border-transparent">
+                      <LogOut size={18} /> Sair da Conta
+                    </button>
+                  </div>
+                </div>
+              </aside>
+
+              {/* Área de Conteúdo */}
+              <section className="flex-1 min-w-0">
+                {activeTab === 'dados' && renderTabDados()}
+                {activeTab === 'empresarial' && renderTabEmpresarial()}
+                {activeTab === 'pedidos' && renderTabPedidos()}
+                {activeTab === 'orcamentos' && renderTabOrcamentos()}
+                {activeTab === 'favoritos' && renderTabFavoritos()}
+                {activeTab === 'carrinho' && renderTabCarrinho()}
+              </section>
+
+            </div>
+          </main>
+
+          {/* Rodapé */}
+          <footer className="bg-black text-stone-400 py-16 px-6 border-t border-stone-800 mt-auto">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+              <div className="col-span-1 md:col-span-1">
+                <div className="flex items-center gap-3 mb-6 text-stone-50">
+                  <a href="index.html">
+                    <img 
+                      src="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" 
+                      alt="2LN 3D Logo" 
+                      className="h-16 w-auto object-contain mix-blend-screen" 
+                      onError={(e) => {
+                        e.target.onerror = null; 
+                        e.target.src = "https://placehold.co/150x56/292524/a8a29e?text=2LN+3D+Logo";
+                      }}
+                    />
+                  </a>
+                </div>
+                <p className="text-sm text-stone-500 mb-6 leading-relaxed">
+                  Estúdio de impressão 3D especializado em FDM. Focados em entregar durabilidade, precisão e soluções reais para clientes finais e empresas.
+                </p>
+                <div className="flex gap-4">
+                  <a href="https://www.instagram.com/2ln3doficial" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center text-stone-400 hover:text-amber-500 hover:bg-stone-800 transition-colors">
+                    <Instagram size={20} />
+                  </a>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-stone-50 font-bold mb-6 uppercase tracking-wider text-sm">Loja</h4>
+                <ul className="space-y-3 text-sm font-medium">
+                  <li><a href="index.html#destaques" className="hover:text-amber-500 transition-colors">Mais Vendidos</a></li>
+                  <li><a href="catalogo.html" className="hover:text-amber-500 transition-colors">Catálogo Completo</a></li>
+                  <li><a href="perfil.html" className="hover:text-amber-500 transition-colors">Acompanhar Pedido</a></li>
+                  <li><a href="#" className="hover:text-amber-500 transition-colors">Trocas e Devoluções</a></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-stone-50 font-bold mb-6 uppercase tracking-wider text-sm">Soluções</h4>
+                <ul className="space-y-3 text-sm font-medium">
+                  <li><a href="index.html#solucoes-empresariais" className="hover:text-amber-500 transition-colors">Brindes Corporativos</a></li>
+                  <li><a href="index.html#solucoes-empresariais" className="hover:text-amber-500 transition-colors">Peças de Reposição</a></li>
+                  <li><a href="index.html#solucoes-empresariais" className="hover:text-amber-500 transition-colors">Prototipagem Rápida</a></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-stone-50 font-bold mb-6 uppercase tracking-wider text-sm">Contato</h4>
+                <ul className="space-y-4 text-sm">
+                  <li className="flex items-start gap-3">
+                    <MapPin size={18} className="text-amber-600 mt-0.5 shrink-0" />
+                    <span>Londrina, PR<br/><span className="text-stone-500">Enviamos para todo o Brasil</span></span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Phone size={18} className="text-amber-600 shrink-0" />
+                    <span>(43) 99999-9999</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Mail size={18} className="text-amber-600 shrink-0" />
+                    <span>contato@2ln3d.com.br</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="max-w-7xl mx-auto border-t border-stone-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-stone-600 font-medium">
+              <p>© {new Date().getFullYear()} 2LN 3D. Todos os direitos reservados.</p>
+              <div className="flex gap-6 mt-4 md:mt-0">
+                <span>CNPJ: 00.000.000/0000-00</span>
+                <a href="#" className="hover:text-stone-400">Termos de Uso</a>
+              </div>
+            </div>
+          </footer>
+        </React.Fragment>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
