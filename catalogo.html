@@ -34,6 +34,8 @@
     const ShoppingCart = (p) => <IconWrapper {...p}><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></IconWrapper>;
     const Filter = (p) => <IconWrapper {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconWrapper>;
     const Building2 = (p) => <IconWrapper {...p}><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></IconWrapper>;
+    const Briefcase = (p) => <IconWrapper {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></IconWrapper>;
+    const ChevronRight = (p) => <IconWrapper {...p}><path d="m9 18 6-6-6-6"/></IconWrapper>;
     const Instagram = (p) => <IconWrapper {...p}><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></IconWrapper>;
     const MapPin = (p) => <IconWrapper {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconWrapper>;
     const Phone = (p) => <IconWrapper {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></IconWrapper>;
@@ -47,6 +49,13 @@
       const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
 
       // Mock de dados que futuramente virá do painel admin
+      const b2bProdutos = [
+        { id: 1, nome: "Chaveiros com Logo (Lote 100un)", descricao: "Ideal para eventos e brindes de final de ano.", tag: "Brinde", img: "https://placehold.co/600x400/292524/a8a29e?text=Lote+Chaveiros" },
+        { id: 2, nome: "Troféu Corporativo", descricao: "Premiações internas e hackathons. Design exclusivo.", tag: "Premiação", img: "https://placehold.co/600x400/292524/a8a29e?text=Trofeu+Personalizado" },
+        { id: 3, nome: "Kit Organizador de Mesa", descricao: "Padronize o escritório com a identidade da marca.", tag: "Escritório", img: "https://placehold.co/600x400/292524/a8a29e?text=Kit+Escritorio" },
+        { id: 4, nome: "Peças de Reposição Específicas", descricao: "Engrenagens e suportes mecânicos fora de linha.", tag: "Manutenção", img: "https://placehold.co/600x400/292524/a8a29e?text=Peca+Tecnica" },
+      ];
+
       const todosProdutos = [
         { id: 101, nome: "Action Figure Cyberpunk", preco: 149.90, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Figure+Cyberpunk" },
         { id: 102, nome: "Suporte para Notebook", preco: 75.00, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+Notebook" },
@@ -213,6 +222,38 @@
                   )}
                 </section>
               </div>
+
+              {/* Seção Empresarial B2B inserida no Catálogo */}
+              <div className="mt-24 pt-16 border-t border-stone-800">
+                <div className="mb-10">
+                  <div className="inline-flex items-center gap-2 bg-amber-900/30 text-amber-500 px-3 py-1 rounded-full text-sm font-bold border border-amber-900/50 mb-4">
+                    <Briefcase size={16} /> B2B & Corporativo
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-stone-50">Soluções Empresariais</h2>
+                  <p className="text-stone-400 mt-2 max-w-2xl">Lotes padronizados, peças de reposição e brindes exclusivos sob demanda. Orçamentos personalizados para sua empresa.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {b2bProdutos.map((produto) => (
+                    <div key={produto.id} className="bg-stone-950 rounded-xl border border-stone-800 p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:border-amber-700/50 transition-colors">
+                      <div className="w-full md:w-48 aspect-video md:aspect-square bg-stone-900 rounded-lg flex items-center justify-center border border-stone-800 flex-shrink-0 overflow-hidden">
+                        <img src={produto.img} alt={produto.tag} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <div className="flex flex-col justify-center">
+                        <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">{produto.tag}</span>
+                        <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
+                        <p className="text-stone-400 text-sm mb-4 leading-relaxed">{produto.descricao}</p>
+                        <div>
+                          <a href="index.html#orcamento" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
+                            Solicitar Cotação <ChevronRight size={16} />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </main>
 
