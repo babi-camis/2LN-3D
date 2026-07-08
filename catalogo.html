@@ -71,7 +71,7 @@
         { id: 112, nome: "Organizador Mesa", preco: 55.00, categoria: "Utilitário", img: "https://placehold.co/400x400/292524/a8a29e?text=Mesa" },
       ];
 
-      const categoriasDisponiveis = ['Todos', 'Geek', 'Setup', 'Decoração', 'Utilitário'];
+      const categoriasDisponiveis = ['Todos', 'Geek', 'Setup', 'Decoração', 'Utilitário', 'Soluções Empresariais'];
       
       const produtosFiltrados = useMemo(() => {
         let filtrados = todosProdutos.filter(p => categoriaFiltro === 'Todos' || p.categoria === categoriaFiltro);
@@ -150,6 +150,7 @@
                     value={ordenacao}
                     onChange={(e) => setOrdenacao(e.target.value)}
                     className="bg-stone-950 border border-stone-800 text-stone-300 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block w-full p-3 outline-none cursor-pointer"
+                    disabled={categoriaFiltro === 'Soluções Empresariais'}
                   >
                     <option value="">Ordenação Padrão</option>
                     <option value="menor">Menor Preço</option>
@@ -177,7 +178,11 @@
                               : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800 border border-transparent'
                           }`}
                         >
-                          {cat}
+                          {cat === 'Soluções Empresariais' ? (
+                            <span className="flex items-center gap-2"><Briefcase size={14} /> {cat}</span>
+                          ) : (
+                            cat
+                          )}
                         </button>
                       ))}
                     </div>
@@ -186,32 +191,55 @@
 
                 {/* Grid de Produtos */}
                 <section className="flex-1">
-                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                    {produtosFiltrados.map((produto) => (
-                      <div key={produto.id} className="bg-stone-950 rounded-lg border border-stone-800 overflow-hidden group flex flex-col hover:border-amber-700/50 transition-colors">
-                        <div className="aspect-square bg-stone-900 relative flex items-center justify-center overflow-hidden">
-                          <img src={produto.img} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
-                          <div className="absolute top-2 right-2 bg-stone-950/90 text-stone-300 text-[10px] uppercase font-bold px-2 py-1 rounded border border-stone-800">
-                            {produto.categoria}
+                  
+                  {categoriaFiltro === 'Soluções Empresariais' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {b2bProdutos.map((produto) => (
+                        <div key={produto.id} className="bg-stone-950 rounded-xl border border-stone-800 p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:border-amber-700/50 transition-colors">
+                          <div className="w-full md:w-48 aspect-video md:aspect-square bg-stone-900 rounded-lg flex items-center justify-center border border-stone-800 flex-shrink-0 overflow-hidden">
+                            <img src={produto.img} alt={produto.tag} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          <div className="flex flex-col justify-center">
+                            <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">{produto.tag}</span>
+                            <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
+                            <p className="text-stone-400 text-sm mb-4 leading-relaxed">{produto.descricao}</p>
+                            <div>
+                              <a href="index.html#orcamento" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
+                                Solicitar Cotação <ChevronRight size={16} />
+                              </a>
+                            </div>
                           </div>
                         </div>
-                        <div className="p-4 flex-1 flex flex-col justify-between">
-                          <div>
-                            <h3 className="font-medium text-sm text-stone-200 line-clamp-2 mb-2 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                      {produtosFiltrados.map((produto) => (
+                        <div key={produto.id} className="bg-stone-950 rounded-lg border border-stone-800 overflow-hidden group flex flex-col hover:border-amber-700/50 transition-colors">
+                          <div className="aspect-square bg-stone-900 relative flex items-center justify-center overflow-hidden">
+                            <img src={produto.img} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
+                            <div className="absolute top-2 right-2 bg-stone-950/90 text-stone-300 text-[10px] uppercase font-bold px-2 py-1 rounded border border-stone-800">
+                              {produto.categoria}
+                            </div>
                           </div>
-                          <div className="flex justify-between items-end mt-2">
-                            <span className="font-bold text-lg text-stone-50">{formatarPreco(produto.preco)}</span>
-                            <button className="w-8 h-8 flex items-center justify-center rounded bg-stone-800 hover:bg-amber-600 text-stone-300 hover:text-stone-50 transition-colors" title="Adicionar ao carrinho">
-                              +
-                            </button>
+                          <div className="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                              <h3 className="font-medium text-sm text-stone-200 line-clamp-2 mb-2 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
+                            </div>
+                            <div className="flex justify-between items-end mt-2">
+                              <span className="font-bold text-lg text-stone-50">{formatarPreco(produto.preco)}</span>
+                              <button className="w-8 h-8 flex items-center justify-center rounded bg-stone-800 hover:bg-amber-600 text-stone-300 hover:text-stone-50 transition-colors" title="Adicionar ao carrinho">
+                                +
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Estado Vazio (quando um filtro não tem produtos) */}
-                  {produtosFiltrados.length === 0 && (
+                  {categoriaFiltro !== 'Soluções Empresariais' && produtosFiltrados.length === 0 && (
                     <div className="w-full py-20 flex flex-col items-center justify-center text-stone-500 bg-stone-950 rounded-xl border border-stone-800 border-dashed">
                       <Filter size={48} className="mb-4 opacity-50" />
                       <p className="text-lg">Nenhum produto encontrado nesta categoria.</p>
@@ -221,37 +249,6 @@
                     </div>
                   )}
                 </section>
-              </div>
-
-              {/* Seção Empresarial B2B inserida no Catálogo */}
-              <div className="mt-24 pt-16 border-t border-stone-800">
-                <div className="mb-10">
-                  <div className="inline-flex items-center gap-2 bg-amber-900/30 text-amber-500 px-3 py-1 rounded-full text-sm font-bold border border-amber-900/50 mb-4">
-                    <Briefcase size={16} /> B2B & Corporativo
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-stone-50">Soluções Empresariais</h2>
-                  <p className="text-stone-400 mt-2 max-w-2xl">Lotes padronizados, peças de reposição e brindes exclusivos sob demanda. Orçamentos personalizados para sua empresa.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {b2bProdutos.map((produto) => (
-                    <div key={produto.id} className="bg-stone-950 rounded-xl border border-stone-800 p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:border-amber-700/50 transition-colors">
-                      <div className="w-full md:w-48 aspect-video md:aspect-square bg-stone-900 rounded-lg flex items-center justify-center border border-stone-800 flex-shrink-0 overflow-hidden">
-                        <img src={produto.img} alt={produto.tag} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      <div className="flex flex-col justify-center">
-                        <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">{produto.tag}</span>
-                        <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
-                        <p className="text-stone-400 text-sm mb-4 leading-relaxed">{produto.descricao}</p>
-                        <div>
-                          <a href="index.html#orcamento" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
-                            Solicitar Cotação <ChevronRight size={16} />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
             </div>
