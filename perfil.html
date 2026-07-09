@@ -62,19 +62,23 @@
       const [activeTab, setActiveTab] = useState('dados');
       const [isEmpresarial, setIsEmpresarial] = useState(false);
       const [userData, setUserData] = useState(null);
+      const [isLoggedOut, setIsLoggedOut] = useState(false);
+      const [isLoading, setIsLoading] = useState(true);
 
-      // Proteção de Rota: Expulsa se não estiver logado.
+      // Proteção de Rota: Deteta utilizador logado de forma segura
       useEffect(() => {
         try {
           const storedData = localStorage.getItem('2ln_userData');
           if (!storedData) {
-            window.location.href = 'login.html';
+            setIsLoggedOut(true);
           } else {
             setUserData(JSON.parse(storedData));
           }
         } catch (error) {
-          console.warn("Erro ao acessar localStorage, prosseguindo com dados mockados.", error);
-          setUserData({ nome: 'Usuário Teste', email: 'teste@exemplo.com' });
+          console.warn("Falha ao aceder ao localStorage.", error);
+          setIsLoggedOut(true);
+        } finally {
+          setIsLoading(false);
         }
       }, []);
 
@@ -82,7 +86,8 @@
         try {
           localStorage.removeItem('2ln_userData');
         } catch(e) {}
-        window.location.href = 'index.html';
+        setUserData(null);
+        setIsLoggedOut(true);
       };
 
       const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
@@ -108,8 +113,28 @@
         { id: 106, nome: "Miniatura RPG Orc", preco: 25.00, qtd: 2, img: "https://placehold.co/100x100/292524/a8a29e?text=Orc" },
       ];
 
-      // Impede renderização da UI base até garantir a autenticação (ou fallback)
-      if (!userData) return null;
+      if (isLoading) return null;
+
+      // Ecrã de fallback amigável quando não há sessão iniciada
+      if (isLoggedOut || !userData) {
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen bg-stone-950 text-stone-300 p-6 text-center">
+            <div className="w-20 h-20 bg-stone-900 rounded-full flex items-center justify-center border border-stone-800 mb-6">
+              <User size={40} className="text-stone-500" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-50 mb-3">Acesso Restrito</h2>
+            <p className="text-stone-400 mb-8 max-w-md text-lg">Precisa de iniciar sessão ou criar uma conta para aceder ao seu perfil e histórico de pedidos.</p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a href="login.html" className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                Ir para o Login
+              </a>
+              <a href="index.html" className="bg-stone-800 hover:bg-stone-700 text-stone-50 px-8 py-3 rounded-lg font-bold transition-colors">
+                Voltar à Home
+              </a>
+            </div>
+          </div>
+        );
+      }
 
       const renderTabDados = () => (
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
@@ -527,7 +552,7 @@
                 <ul className="space-y-3 text-sm font-medium">
                   <li><a href="index.html#destaques" className="hover:text-amber-500 transition-colors">Mais Vendidos</a></li>
                   <li><a href="catalogo.html" className="hover:text-amber-500 transition-colors">Catálogo Completo</a></li>
-                  <li><a href="#" className="hover:text-amber-500 transition-colors">Acompanhar Pedido</a></li>
+                  <li><a href="perfil.html" className="hover:text-amber-500 transition-colors">Acompanhar Pedido</a></li>
                   <li><a href="#" className="hover:text-amber-500 transition-colors">Trocas e Devoluções</a></li>
                 </ul>
               </div>
