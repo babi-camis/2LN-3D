@@ -20,7 +20,7 @@
   <div id="root" class="w-full max-w-md"></div>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
     // --- Ícones ---
     const IconWrapper = ({ children, size = 24, className = "" }) => (
@@ -60,6 +60,17 @@
       const [nome, setNome] = useState('');
       const [email, setEmail] = useState('');
       const [senha, setSenha] = useState('');
+      const [isChecking, setIsChecking] = useState(true);
+
+      // Proteção de Rota: Se já estiver logado, manda pro perfil
+      useEffect(() => {
+        const userData = localStorage.getItem('2ln_userData');
+        if (userData) {
+          window.location.href = 'perfil.html';
+        } else {
+          setIsChecking(false);
+        }
+      }, []);
 
       const handleSubmit = (e) => {
         e.preventDefault();
@@ -69,19 +80,22 @@
           // No cadastro, salva o nome e o e-mail
           localStorage.setItem('2ln_userData', JSON.stringify({ nome, email }));
         } else {
-          // No login, verifica se já existe algo. Se não, salva um fallback apenas para demonstração.
+          // No login, verifica se já existe algo. Se não, salva o email simulando um login.
           const existingData = JSON.parse(localStorage.getItem('2ln_userData')) || {};
-          localStorage.setItem('2ln_userData', JSON.stringify({ ...existingData, email }));
+          const nomeFinal = existingData.nome || 'Usuário';
+          localStorage.setItem('2ln_userData', JSON.stringify({ nome: nomeFinal, email }));
         }
 
         window.location.href = 'perfil.html';
       };
 
-      // Limpar os campos ao trocar entre Login e Cadastro
       const toggleMode = (mode) => {
         setIsLogin(mode);
         setSenha('');
       };
+
+      // Evita o piscar da tela de login se o usuário já estiver logado
+      if (isChecking) return null;
 
       return (
         <div className="bg-stone-950 border border-stone-800 rounded-2xl shadow-2xl overflow-hidden relative">
