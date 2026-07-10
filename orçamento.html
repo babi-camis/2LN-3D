@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitar Orçamento - 2LN 3D</title>
+  <link rel="icon" href="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" type="image/jpeg">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="bg-stone-950 text-stone-300 font-sans selection:bg-amber-700 selection:text-white min-h-screen flex flex-col">
+  
+  <div id="root" class="flex-1 flex flex-col"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- Ícones ---
+    const IconWrapper = ({ children, size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {children}
+      </svg>
+    );
+
+    const Menu = (p) => <IconWrapper {...p}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconWrapper>;
+    const X = (p) => <IconWrapper {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
+    const ShoppingCart = (p) => <IconWrapper {...p}><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></IconWrapper>;
+    const User = (p) => <IconWrapper {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconWrapper>;
+    const Building2 = (p) => <IconWrapper {...p}><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></IconWrapper>;
+    const ArrowLeft = (p) => <IconWrapper {...p}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></IconWrapper>;
+    const UploadCloud = (p) => <IconWrapper {...p}><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/><polyline points="16 16 12 12 8 16"/></IconWrapper>;
+    const LinkIcon = (p) => <IconWrapper {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></IconWrapper>;
+    const CheckCircle = (p) => <IconWrapper {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconWrapper>;
+    const FileImage = (p) => <IconWrapper {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><circle cx="10" cy="13" r="2"/><path d="m20 17-1.09-1.09a2 2 0 0 0-2.82 0L10 22"/></IconWrapper>;
+
+    const InputField = ({ label, type = "text", placeholder, defaultValue, required = false, rows }) => {
+      const baseClasses = "w-full bg-stone-900 border border-stone-800 text-stone-200 rounded-lg p-3 outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-all placeholder:text-stone-600";
+      
+      return (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-stone-400">
+            {label} {required && <span className="text-amber-500">*</span>}
+          </label>
+          {type === "textarea" ? (
+            <textarea 
+              placeholder={placeholder} 
+              defaultValue={defaultValue}
+              required={required}
+              rows={rows || 4}
+              className={`${baseClasses} resize-y`}
+            ></textarea>
+          ) : (
+            <input 
+              type={type} 
+              placeholder={placeholder} 
+              defaultValue={defaultValue}
+              required={required}
+              className={baseClasses}
+            />
+          )}
+        </div>
+      );
+    };
+
+    function App() {
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [userData, setUserData] = useState(null);
+      const [cartTotal, setCartTotal] = useState(0);
+      const [fileName, setFileName] = useState("");
+      const [isSubmitting, setIsSubmitting] = useState(false);
+      const [isSuccess, setIsSuccess] = useState(false);
+
+      useEffect(() => {
+        // Carrega dados do usuário logado
+        try {
+          const storedData = localStorage.getItem('2ln_userData');
+          if (storedData) {
+            setUserData(JSON.parse(storedData));
+          }
+        } catch (error) {
+          console.warn("Falha ao ler dados do utilizador.", error);
+        }
+
+        // Carrega contador do carrinho
+        try {
+          const savedCart = localStorage.getItem('2ln_cart');
+          if (savedCart) {
+            const cartArr = JSON.parse(savedCart);
+            setCartTotal(cartArr.reduce((acc, item) => acc + item.qtd, 0));
+          }
+        } catch (error) {}
+      }, []);
+
+      const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+          setFileName(e.target.files[0].name);
+        }
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        
+        // Simulação de envio para a API ou base de dados
+        setTimeout(() => {
+          setIsSubmitting(false);
+          setIsSuccess(true);
+          
+          // Se não estava logado mas enviou os dados, podemos criar uma sessão básica ou mock
+          if (!userData) {
+            const tempUser = { 
+              nome: e.target.nome.value, 
+              email: e.target.email.value 
+            };
+            try {
+              localStorage.setItem('2ln_userData', JSON.stringify(tempUser));
+            } catch(err){}
+          }
+        }, 1500);
+      };
+
+      return (
+        <React.Fragment>
+          {/* Navegação Global */}
+          <header className="bg-stone-950 border-b border-stone-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+            <div className="flex items-center gap-3">
+              <a href="index.html">
+                <img 
+                  src="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" 
+                  alt="2LN 3D Logo" 
+                  className="h-10 w-auto object-contain mix-blend-screen"
+                  onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x40/292524/a8a29e?text=2LN"; }}
+                />
+              </a>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-8 text-sm font-semibold text-stone-400">
+              <a href="index.html#destaques" className="hover:text-amber-500 transition-colors">Destaques</a>
+              <a href="catalogo.html" className="hover:text-amber-500 transition-colors">Catálogo</a>
+              <a href="index.html#solucoes-empresariais" className="hover:text-amber-500 transition-colors">Soluções Empresariais</a>
+              <a href="#" className="text-amber-500 transition-colors">Orçamentos</a>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <a href="perfil.html" className="text-stone-400 hover:text-amber-500 transition-colors hidden sm:block">
+                <User size={22} />
+              </a>
+              <a href="perfil.html" className="text-stone-400 hover:text-amber-500 transition-colors relative" title="Carrinho">
+                <ShoppingCart size={22} />
+                {cartTotal > 0 && (
+                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">
+                    {cartTotal}
+                  </span>
+                )}
+              </a>
+              <button className="lg:hidden p-2 text-stone-400 -mr-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </header>
+
+          {/* Menu Mobile */}
+          {isMenuOpen && (
+            <div className="lg:hidden fixed inset-0 top-[73px] z-40 bg-stone-950 border-b border-stone-800 px-6 py-4 flex flex-col gap-4">
+              <a href="index.html#destaques" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Destaques</a>
+              <a href="catalogo.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Catálogo Completo</a>
+              <a href="index.html#solucoes-empresariais" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Soluções Empresariais</a>
+              <a href="#" className="text-lg font-semibold text-amber-500 transition-colors">Orçamentos</a>
+              <a href="perfil.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors border-t border-stone-800 pt-4 mt-2">Meu Perfil</a>
+            </div>
+          )}
+
+          {}
+          <main className="flex-1 bg-stone-900 py-8 md:py-12 px-4 sm:px-6 relative overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/10 via-stone-900/0 to-transparent pointer-events-none"></div>
+
+            <div className="max-w-3xl mx-auto relative z-10">
+              
+              <div className="mb-8">
+                <a href="javascript:history.back()" className="inline-flex items-center gap-2 text-stone-400 hover:text-stone-200 transition-colors text-sm font-medium mb-6">
+                  <ArrowLeft size={16} /> Voltar
+                </a>
+                <h1 className="text-3xl md:text-4xl font-bold text-stone-50 mb-3">Solicitação de Orçamento</h1>
+                <p className="text-stone-400">Tem uma ideia, uma peça quebrada ou precisa de um lote corporativo? Descreva os detalhes abaixo e a nossa equipa entrará em contacto consigo em até 24h úteis.</p>
+              </div>
+
+              {isSuccess ? (
+                /* Tela de Sucesso */
+                <div className="bg-stone-950 border border-green-900/30 rounded-2xl p-8 md:p-12 text-center shadow-xl">
+                  <div className="w-20 h-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
+                    <CheckCircle size={40} />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-stone-50 mb-4">Orçamento Solicitado!</h2>
+                  <p className="text-stone-400 mb-8 max-w-md mx-auto">
+                    Recebemos os detalhes do seu projeto. A nossa equipa comercial já está a avaliar as opções e responderá para o seu e-mail ou WhatsApp em breve.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="perfil.html" className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-3 rounded-lg font-bold transition-colors">
+                      Acompanhar no Perfil
+                    </a>
+                    <a href="catalogo.html" className="bg-stone-800 hover:bg-stone-700 text-stone-200 px-8 py-3 rounded-lg font-bold transition-colors">
+                      Voltar ao Catálogo
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                /* Formulário */
+                <form onSubmit={handleSubmit} className="space-y-8 bg-stone-950 border border-stone-800 rounded-2xl p-6 md:p-10 shadow-xl">
+                  
+                  {/* Seção 1: Dados de Contato */}
+                  <div>
+                    <h3 className="text-lg font-bold text-stone-50 mb-4 flex items-center gap-2 border-b border-stone-800 pb-3">
+                      <User size={18} className="text-amber-500"/> Seus Dados
+                    </h3>
+                    
+                    {!userData && (
+                      <div className="bg-amber-900/10 border border-amber-900/30 rounded-lg p-4 mb-6 text-sm text-stone-300">
+                        <span className="font-bold text-amber-500">Dica:</span> Se já tem conta, faça <a href="login.html" className="underline hover:text-amber-400">Login</a> para preencher isto automaticamente.
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <InputField name="nome" label="Nome Completo / Empresa" required defaultValue={userData?.nome || ''} />
+                      <InputField name="email" label="E-mail de Contacto" type="email" required defaultValue={userData?.email || ''} />
+                      <div className="md:col-span-2">
+                        <InputField name="telefone" label="WhatsApp / Telefone" placeholder="(00) 90000-0000" required />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Seção 2: Detalhes do Projeto */}
+                  <div>
+                    <h3 className="text-lg font-bold text-stone-50 mb-4 flex items-center gap-2 border-b border-stone-800 pb-3">
+                      <Building2 size={18} className="text-amber-500"/> Detalhes do Projeto
+                    </h3>
+                    
+                    <div className="space-y-5">
+                      <InputField 
+                        label="Descrição do Pedido" 
+                        type="textarea" 
+                        required 
+                        placeholder="Descreva o que precisa. Ex: Preciso de 50 chaveiros com o logo da minha empresa. O tamanho aproximado é 5cm x 5cm. Cor preta."
+                        rows="5"
+                      />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <InputField label="Quantidade Estimada" type="number" required defaultValue="1" />
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-sm font-medium text-stone-400">Link de Referência (Opcional)</label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-500">
+                              <LinkIcon size={16} />
+                            </div>
+                            <input 
+                              type="url" 
+                              placeholder="https://thingiverse.com/..." 
+                              className="w-full bg-stone-900 border border-stone-800 text-stone-200 rounded-lg pl-10 pr-3 py-3 outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-all placeholder:text-stone-600"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Upload Box Estilizado */}
+                      <div className="flex flex-col gap-1.5 mt-2">
+                        <label className="text-sm font-medium text-stone-400">Anexar Ficheiro (Fotos, .STL, .OBJ) - Opcional</label>
+                        <div className="relative">
+                          <input 
+                            type="file" 
+                            id="file-upload" 
+                            className="hidden" 
+                            onChange={handleFileChange}
+                            accept="image/*,.stl,.obj,.zip"
+                          />
+                          <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-stone-800 border-dashed rounded-lg cursor-pointer bg-stone-900/50 hover:bg-stone-900 hover:border-amber-700/50 transition-colors">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              {fileName ? (
+                                <React.Fragment>
+                                  <FileImage size={32} className="text-amber-500 mb-3" />
+                                  <p className="mb-2 text-sm text-stone-200 font-bold px-4 text-center truncate w-full">{fileName}</p>
+                                  <p className="text-xs text-stone-500">Clique para substituir</p>
+                                </React.Fragment>
+                              ) : (
+                                <React.Fragment>
+                                  <UploadCloud size={32} className="text-stone-500 mb-3" />
+                                  <p className="mb-2 text-sm text-stone-400"><span className="font-semibold text-stone-200">Clique para anexar</span> ou arraste o ficheiro</p>
+                                  <p className="text-xs text-stone-600">SVG, PNG, JPG, STL ou OBJ (Max 15MB)</p>
+                                </React.Fragment>
+                              )}
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Submit Area */}
+                  <div className="pt-4 border-t border-stone-800">
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className={`w-full md:w-auto md:px-12 py-4 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 ${
+                        isSubmitting 
+                        ? 'bg-stone-800 text-stone-500 cursor-not-allowed' 
+                        : 'bg-amber-700 hover:bg-amber-600 text-stone-50 shadow-[0_0_15px_rgba(180,83,9,0.3)]'
+                      }`}
+                    >
+                      {isSubmitting ? (
+                        <React.Fragment>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-stone-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          Enviando...
+                        </React.Fragment>
+                      ) : (
+                        'Solicitar Orçamento Gratuito'
+                      )}
+                    </button>
+                    <p className="text-stone-500 text-xs text-center md:text-left mt-4">
+                      Ao enviar, concorda com a nossa política de privacidade. O envio não gera compromisso de compra.
+                    </p>
+                  </div>
+
+                </form>
+              )}
+            </div>
+          </main>
+        </React.Fragment>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
