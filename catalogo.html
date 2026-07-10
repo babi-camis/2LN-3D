@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +20,7 @@
   <div id="root" class="flex-1 flex flex-col"></div>
 
   <script type="text/babel">
-    const { useState, useMemo } = React;
+    const { useState, useMemo, useEffect } = React;
 
     // --- Ícones ---
     const IconWrapper = ({ children, size = 24, className = "" }) => (
@@ -40,15 +40,76 @@
     const MapPin = (p) => <IconWrapper {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconWrapper>;
     const Phone = (p) => <IconWrapper {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></IconWrapper>;
     const Mail = (p) => <IconWrapper {...p}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></IconWrapper>;
+    const Trash2 = (p) => <IconWrapper {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></IconWrapper>;
+    const Plus = (p) => <IconWrapper {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconWrapper>;
+    const Minus = (p) => <IconWrapper {...p}><line x1="5" y1="12" x2="19" y2="12"/></IconWrapper>;
+    const CheckCircle = (p) => <IconWrapper {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconWrapper>;
 
     function App() {
       const [isMenuOpen, setIsMenuOpen] = useState(false);
       const [categoriaFiltro, setCategoriaFiltro] = useState('Todos');
       const [ordenacao, setOrdenacao] = useState(''); // '' | 'menor' | 'maior'
 
-      const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+      // Estados do Carrinho
+      const [isCartOpen, setIsCartOpen] = useState(false);
+      const [toast, setToast] = useState(null);
+      const [cart, setCart] = useState([]);
 
-      // Mock de dados que futuramente virá do painel admin
+      useEffect(() => {
+        const savedCart = localStorage.getItem('2ln_cart');
+        if (savedCart) {
+          try { setCart(JSON.parse(savedCart)); } catch(e) {}
+        }
+
+        const handleStorageChange = (e) => {
+          if (e.key === '2ln_cart') {
+            try { setCart(JSON.parse(e.newValue) || []); } catch(err) {}
+          }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+      }, []);
+
+      useEffect(() => {
+        localStorage.setItem('2ln_cart', JSON.stringify(cart));
+      }, [cart]);
+
+      const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+      const cartTotalItens = cart.reduce((acc, item) => acc + item.qtd, 0);
+      const cartSubtotal = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+
+      const showToast = (mensagem) => {
+        setToast(mensagem);
+        setTimeout(() => setToast(null), 3000);
+      };
+
+      const handleAddToCart = (produto) => {
+        setCart(prev => {
+          const existe = prev.find(p => p.id === produto.id);
+          if (existe) {
+            return prev.map(p => p.id === produto.id ? { ...p, qtd: p.qtd + 1 } : p);
+          }
+          return [...prev, { ...produto, qtd: 1 }];
+        });
+        showToast(`${produto.nome} adicionado ao carrinho!`);
+      };
+
+      const handleRemoveFromCart = (id) => {
+        setCart(prev => prev.filter(p => p.id !== id));
+      };
+
+      const handleUpdateQtd = (id, delta) => {
+        setCart(prev => prev.map(p => {
+          if (p.id === id) {
+            const novaQtd = p.qtd + delta;
+            return novaQtd > 0 ? { ...p, qtd: novaQtd } : p;
+          }
+          return p;
+        }));
+      };
+
+      // Mock de dados
       const b2bProdutos = [
         { id: 1, nome: "Chaveiros com Logo (Lote 100un)", descricao: "Ideal para eventos e brindes de final de ano.", tag: "Brinde", img: "https://placehold.co/600x400/292524/a8a29e?text=Lote+Chaveiros" },
         { id: 2, nome: "Troféu Corporativo", descricao: "Premiações internas e hackathons. Design exclusivo.", tag: "Premiação", img: "https://placehold.co/600x400/292524/a8a29e?text=Trofeu+Personalizado" },
@@ -88,7 +149,7 @@
       return (
         <React.Fragment>
           {/* Navegação Global */}
-          <nav className="sticky top-0 z-50 bg-stone-950/90 backdrop-blur-md border-b border-stone-800 px-6 py-4 flex justify-between items-center transition-all duration-300">
+          <nav className="sticky top-0 z-40 bg-stone-950/90 backdrop-blur-md border-b border-stone-800 px-6 py-4 flex justify-between items-center transition-all duration-300">
             <div className="flex items-center gap-3">
               <a href="index.html">
                 <img 
@@ -112,20 +173,34 @@
             </div>
 
             <div className="hidden lg:flex items-center gap-6">
-              <button className="text-stone-400 hover:text-amber-500 transition-colors relative">
+              <button onClick={() => setIsCartOpen(true)} className="text-stone-400 hover:text-amber-500 transition-colors relative" title="Carrinho de Compras">
                 <ShoppingCart size={22} />
-                <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">0</span>
+                {cartTotalItens > 0 && (
+                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">
+                    {cartTotalItens}
+                  </span>
+                )}
               </button>
             </div>
 
-            <button className="lg:hidden p-2 text-stone-400" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            <div className="lg:hidden flex items-center gap-4">
+              <button onClick={() => setIsCartOpen(true)} className="text-stone-400 relative">
+                <ShoppingCart size={22} />
+                {cartTotalItens > 0 && (
+                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">
+                    {cartTotalItens}
+                  </span>
+                )}
+              </button>
+              <button className="p-2 text-stone-400" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
           </nav>
 
           {/* Menu Mobile */}
           {isMenuOpen && (
-            <div className="lg:hidden fixed inset-0 top-[88px] z-40 bg-stone-950 border-b border-stone-800 px-6 py-4 flex flex-col gap-4">
+            <div className="lg:hidden fixed inset-0 top-[88px] z-30 bg-stone-950 border-b border-stone-800 px-6 py-4 flex flex-col gap-4">
                 <a href="index.html#destaques" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Destaques</a>
                 <a href="index.html#diferencial" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Diferenciais</a>
                 <a href="#" className="text-lg font-semibold text-amber-500 transition-colors">Catálogo Completo</a>
@@ -134,11 +209,82 @@
             </div>
           )}
 
+          {/* Menu Lateral do Carrinho (Drawer) */}
+          <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isCartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}></div>
+            <div className={`absolute top-0 right-0 w-full sm:w-[400px] h-full bg-stone-950 border-l border-stone-800 shadow-2xl flex flex-col transition-transform duration-300 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+              
+              <div className="p-6 border-b border-stone-800 flex justify-between items-center bg-stone-900/50">
+                <h2 className="text-xl font-bold text-stone-50 flex items-center gap-2">
+                  <ShoppingCart size={24} className="text-amber-500"/> Carrinho
+                </h2>
+                <button onClick={() => setIsCartOpen(false)} className="text-stone-400 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {cart.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-stone-500 space-y-4">
+                    <ShoppingCart size={48} className="opacity-20" />
+                    <p>O seu carrinho está vazio.</p>
+                  </div>
+                ) : (
+                  cart.map(item => (
+                    <div key={item.id} className="flex gap-4 p-3 bg-stone-900 border border-stone-800 rounded-lg">
+                      <img src={item.img} alt={item.nome} className="w-20 h-20 object-cover rounded bg-stone-950" />
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div className="flex justify-between items-start">
+                          <h4 className="font-bold text-sm text-stone-200 line-clamp-2 pr-2">{item.nome}</h4>
+                          <button onClick={() => handleRemoveFromCart(item.id)} className="text-stone-500 hover:text-red-500 transition-colors">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="font-bold text-amber-500">{formatarPreco(item.preco * item.qtd)}</span>
+                          <div className="flex items-center gap-2 bg-stone-950 border border-stone-800 rounded px-2 py-1">
+                            <button onClick={() => handleUpdateQtd(item.id, -1)} className="text-stone-400 hover:text-white"><Minus size={14}/></button>
+                            <span className="text-xs font-bold w-4 text-center text-stone-200">{item.qtd}</span>
+                            <button onClick={() => handleUpdateQtd(item.id, 1)} className="text-stone-400 hover:text-white"><Plus size={14}/></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {cart.length > 0 && (
+                <div className="p-6 border-t border-stone-800 bg-stone-900/50">
+                  <div className="flex justify-between text-stone-300 mb-2">
+                    <span>Subtotal</span>
+                    <span>{formatarPreco(cartSubtotal)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg text-stone-50 mb-6">
+                    <span>Total</span>
+                    <span className="text-amber-500">{formatarPreco(cartSubtotal)}</span>
+                  </div>
+                  <button className="w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-3 rounded-lg transition-colors">
+                    Finalizar Compra
+                  </button>
+                  <a href="perfil.html" className="block text-center mt-4 text-sm text-stone-400 hover:text-stone-200 transition-colors">
+                    Ver no Meu Perfil
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Toast Notification (Pop-up de Adição) */}
+          <div className={`fixed bottom-6 right-6 z-50 bg-stone-800 border border-stone-700 text-stone-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transition-all duration-300 transform ${toast ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
+            <CheckCircle size={20} className="text-green-500" />
+            <span className="font-medium text-sm">{toast}</span>
+          </div>
+
           {/* Container Principal do Catálogo */}
           <main className="flex-1 px-6 py-12 md:py-16 bg-stone-900">
             <div className="max-w-7xl mx-auto">
               
-              {/* Header do Catálogo */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold text-stone-50 mb-2">Catálogo Completo</h1>
@@ -228,8 +374,8 @@
                             </div>
                             <div className="flex justify-between items-end mt-2">
                               <span className="font-bold text-lg text-stone-50">{formatarPreco(produto.preco)}</span>
-                              <button className="w-8 h-8 flex items-center justify-center rounded bg-stone-800 hover:bg-amber-600 text-stone-300 hover:text-stone-50 transition-colors" title="Adicionar ao carrinho">
-                                +
+                              <button onClick={() => handleAddToCart(produto)} className="w-8 h-8 flex items-center justify-center rounded bg-stone-800 hover:bg-amber-600 text-stone-300 hover:text-stone-50 transition-colors" title="Adicionar ao carrinho">
+                                <Plus size={16} />
                               </button>
                             </div>
                           </div>
@@ -238,7 +384,6 @@
                     </div>
                   )}
 
-                  {/* Estado Vazio (quando um filtro não tem produtos) */}
                   {categoriaFiltro !== 'Soluções Empresariais' && produtosFiltrados.length === 0 && (
                     <div className="w-full py-20 flex flex-col items-center justify-center text-stone-500 bg-stone-950 rounded-xl border border-stone-800 border-dashed">
                       <Filter size={48} className="mb-4 opacity-50" />
