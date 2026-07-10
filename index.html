@@ -24,7 +24,6 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // --- Ícones ---
     const IconWrapper = ({ children, size = 24, className = "" }) => (
       <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
         {children}
@@ -113,7 +112,13 @@
         }));
       };
 
-      // --- DADOS DA HOME ---
+      const b2bProdutos = [
+        { id: 1, nome: "Chaveiros com Logo (Lote 100un)", descricao: "Ideal para eventos e brindes de final de ano.", tag: "Brinde", img: "https://placehold.co/600x400/292524/a8a29e?text=Lote+Chaveiros" },
+        { id: 2, nome: "Troféu Corporativo", descricao: "Premiações internas e hackathons. Design exclusivo.", tag: "Premiação", img: "https://placehold.co/600x400/292524/a8a29e?text=Trofeu+Personalizado" },
+        { id: 3, nome: "Kit Organizador de Mesa", descricao: "Padronize o escritório com a identidade da marca.", tag: "Escritório", img: "https://placehold.co/600x400/292524/a8a29e?text=Kit+Escritorio" },
+        { id: 4, nome: "Peças de Reposição Específicas", descricao: "Engrenagens e suportes mecânicos fora de linha.", tag: "Manutenção", img: "https://placehold.co/600x400/292524/a8a29e?text=Peca+Tecnica" },
+      ];
+
       const previewProdutos = [
         { id: 101, nome: "Action Figure Cyberpunk", preco: 149.90, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Figure+Cyberpunk" },
         { id: 102, nome: "Suporte para Notebook", preco: 75.00, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+Notebook" },
@@ -147,7 +152,7 @@
               <a href="#destaques" className="hover:text-amber-500 transition-colors">Destaques</a>
               <a href="#diferencial" className="hover:text-amber-500 transition-colors">Diferenciais</a>
               <a href="catalogo.html" className="hover:text-amber-500 transition-colors">Catálogo Completo</a>
-              <a href="#solucoes-empresariais" className="text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-1"><Building2 size={16}/> Soluções Empresariais</a>
+              <a href="orcamento.html" className="text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-1"><Building2 size={16}/> Soluções Empresariais</a>
               <a href="orcamento.html" className="hover:text-amber-500 transition-colors">Orçamentos</a>
             </div>
 
@@ -189,8 +194,8 @@
                 <a href="#destaques" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Destaques</a>
                 <a href="#diferencial" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Diferenciais</a>
                 <a href="catalogo.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Catálogo Completo</a>
-                <a href="#solucoes-empresariais" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-2"><Building2 size={20}/> Soluções Empresariais</a>
-                <a href="orcamento.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Orçamentos</a>
+                <a href="orcamento.html" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-2"><Building2 size={20}/> Soluções Empresariais</a>
+                <a href="orcamento.html" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Orçamentos</a>
             </div>
           )}
 
@@ -199,7 +204,6 @@
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}></div>
             <div className={`absolute top-0 right-0 w-full sm:w-[400px] h-full bg-stone-950 border-l border-stone-800 shadow-2xl flex flex-col transition-transform duration-300 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
               
-              {/* Header Carrinho */}
               <div className="p-6 border-b border-stone-800 flex justify-between items-center bg-stone-900/50">
                 <h2 className="text-xl font-bold text-stone-50 flex items-center gap-2">
                   <ShoppingCart size={24} className="text-amber-500"/> Carrinho
@@ -209,7 +213,6 @@
                 </button>
               </div>
 
-              {/* Itens do Carrinho */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {cart.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-stone-500 space-y-4">
@@ -242,16 +245,15 @@
                 )}
               </div>
 
-              {/* Rodapé Carrinho */}
               {cart.length > 0 && (
                 <div className="p-6 border-t border-stone-800 bg-stone-900/50">
                   <div className="flex justify-between text-stone-300 mb-2">
                     <span>Subtotal</span>
                     <span>{formatarPreco(cartSubtotal)}</span>
-                    <div className="border-t border-stone-800 pt-3 flex justify-between items-center">
-                      <span className="font-bold text-stone-200">Total Previsto</span>
-                      <span className="font-bold text-xl text-amber-500">{formatarPreco(cartSubtotal)}</span>
-                    </div>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg text-stone-50 mb-6">
+                    <span>Total</span>
+                    <span className="text-amber-500">{formatarPreco(cartSubtotal)}</span>
                   </div>
                   <a href="checkout.html" className="block text-center w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-3 rounded-lg transition-colors">
                     Finalizar Compra
@@ -264,7 +266,7 @@
             </div>
           </div>
 
-          {/* Toast Notification (Pop-up de Adição) */}
+          {/* Toast Notification */}
           <div className={`fixed bottom-6 right-6 z-50 bg-stone-800 border border-stone-700 text-stone-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transition-all duration-300 transform ${toast ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
             <CheckCircle size={20} className="text-green-500" />
             <span className="font-medium text-sm">{toast}</span>
@@ -288,7 +290,7 @@
                 <a href="catalogo.html" className="bg-stone-800 hover:bg-stone-700 text-stone-50 px-8 py-3 rounded font-bold transition-colors border border-stone-700 flex items-center justify-center gap-2">
                   Ver Catálogo
                 </a>
-                <a href="#solucoes-empresariais" className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-3 rounded font-bold transition-colors shadow-[0_0_15px_rgba(180,83,9,0.4)] flex items-center justify-center gap-2">
+                <a href="orcamento.html" className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-3 rounded font-bold transition-colors shadow-[0_0_15px_rgba(180,83,9,0.4)] flex items-center justify-center gap-2">
                   Projetos Especiais <ArrowRight size={18} />
                 </a>
               </div>
@@ -374,26 +376,28 @@
           </section>
 
           {/* Soluções Empresariais B2B */}
-                    <div className="flex flex-col justify-center">
-                      <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">Brinde</span>
-                      <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">Chaveiros com Logo (Lote)</h3>
-                      <p className="text-stone-400 text-sm mb-4 leading-relaxed">Ideal para eventos e brindes de final de ano.</p>
-                      <div>
-                        <a href="orcamento.html" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
-                          Solicitar Cotação <ChevronRight size={16} />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-stone-900 rounded-xl border border-stone-800 p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:border-amber-700/50 transition-colors">
+          <section id="solucoes-empresariais" className="px-6 py-20 bg-stone-950 border-t border-stone-800 relative overflow-hidden">
+            <div className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-r from-amber-900/5 to-transparent pointer-events-none"></div>
+            
+            <div className="max-w-7xl mx-auto relative z-10">
+              <div className="mb-12">
+                <div className="inline-flex items-center gap-2 bg-amber-900/30 text-amber-500 px-3 py-1 rounded-full text-sm font-bold border border-amber-900/50 mb-4">
+                  <Briefcase size={16} /> B2B & Corporativo
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-stone-50">Soluções Empresariais</h2>
+                <p className="text-stone-400 mt-2 max-w-2xl">Atendimento focado em volume, padronização e exclusividade para alavancar a marca da sua empresa.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {b2bProdutos.map((produto) => (
+                  <div key={produto.id} className="bg-stone-900 rounded-xl border border-stone-800 p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:border-amber-700/50 transition-colors">
                     <div className="w-full md:w-48 aspect-video md:aspect-square bg-stone-950 rounded-lg flex items-center justify-center border border-stone-800 flex-shrink-0 overflow-hidden">
-                      <img src="https://placehold.co/600x400/292524/a8a29e?text=Trofeu+Personalizado" alt="Premiação" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <img src={produto.img} alt={produto.tag} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="flex flex-col justify-center">
-                      <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">Premiação</span>
-                      <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">Troféu Corporativo</h3>
-                      <p className="text-stone-400 text-sm mb-4 leading-relaxed">Premiações internas e hackathons. Design exclusivo.</p>
+                      <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">{produto.tag}</span>
+                      <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">{produto.nome}</h3>
+                      <p className="text-stone-400 text-sm mb-4 leading-relaxed">{produto.descricao}</p>
                       <div>
                         <a href="orcamento.html" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
                           Solicitar Cotação <ChevronRight size={16} />
@@ -401,23 +405,7 @@
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="bg-stone-900 rounded-xl border border-stone-800 p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:border-amber-700/50 transition-colors">
-                  <div className="w-full md:w-48 aspect-video md:aspect-square bg-stone-950 rounded-lg flex items-center justify-center border border-stone-800 flex-shrink-0 overflow-hidden">
-                    <img src="https://placehold.co/600x400/292524/a8a29e?text=Trofeu+Personalizado" alt="Premiação" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">Premiação</span>
-                    <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">Troféu Corporativo</h3>
-                    <p className="text-stone-400 text-sm mb-4 leading-relaxed">Premiações internas e hackathons. Design exclusivo.</p>
-                    <div>
-                      <a href="#orcamento" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
-                        Solicitar Cotação <ChevronRight size={16} />
-                      </a>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </section>
