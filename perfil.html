@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,6 +44,9 @@
     const Heart = (p) => <IconWrapper {...p}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></IconWrapper>;
     const FileText = (p) => <IconWrapper {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></IconWrapper>;
     const LogOut = (p) => <IconWrapper {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></IconWrapper>;
+    const Trash2 = (p) => <IconWrapper {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></IconWrapper>;
+    const Plus = (p) => <IconWrapper {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconWrapper>;
+    const Minus = (p) => <IconWrapper {...p}><line x1="5" y1="12" x2="19" y2="12"/></IconWrapper>;
 
     const InputField = ({ label, type = "text", placeholder, defaultValue }) => (
       <div className="flex flex-col gap-1.5">
@@ -64,8 +67,11 @@
       const [userData, setUserData] = useState(null);
       const [isLoggedOut, setIsLoggedOut] = useState(false);
       const [isLoading, setIsLoading] = useState(true);
+      
+      // Estado dinâmico do carrinho
+      const [cart, setCart] = useState([]);
 
-      // Proteção de Rota: Deteta utilizador logado de forma segura
+      // Proteção de Rota e Carregamento do Carrinho
       useEffect(() => {
         try {
           const storedData = localStorage.getItem('2ln_userData');
@@ -74,13 +80,34 @@
           } else {
             setUserData(JSON.parse(storedData));
           }
+
+          const savedCart = localStorage.getItem('2ln_cart');
+          if (savedCart) {
+            setCart(JSON.parse(savedCart));
+          }
         } catch (error) {
           console.warn("Falha ao aceder ao localStorage.", error);
           setIsLoggedOut(true);
         } finally {
           setIsLoading(false);
         }
+
+        // Sincronização entre abas
+        const handleStorageChange = (e) => {
+          if (e.key === '2ln_cart') {
+            try { setCart(JSON.parse(e.newValue) || []); } catch(err) {}
+          }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
       }, []);
+
+      // Atualiza o cache quando o carrinho muda localmente
+      useEffect(() => {
+        if (!isLoading) {
+          localStorage.setItem('2ln_cart', JSON.stringify(cart));
+        }
+      }, [cart, isLoading]);
 
       const handleLogout = () => {
         try {
@@ -91,6 +118,23 @@
       };
 
       const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+      
+      const cartTotalItens = cart.reduce((acc, item) => acc + item.qtd, 0);
+      const cartSubtotal = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+
+      const handleRemoveFromCart = (id) => {
+        setCart(prev => prev.filter(p => p.id !== id));
+      };
+
+      const handleUpdateQtd = (id, delta) => {
+        setCart(prev => prev.map(p => {
+          if (p.id === id) {
+            const novaQtd = p.qtd + delta;
+            return novaQtd > 0 ? { ...p, qtd: novaQtd } : p;
+          }
+          return p;
+        }));
+      };
 
       // --- MOCKS DE DADOS ---
       const mockPedidos = [
@@ -106,11 +150,6 @@
       const mockFavoritos = [
         { id: 102, nome: "Suporte para Notebook", preco: 75.00, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+Notebook" },
         { id: 104, nome: "Vaso Cachepot", preco: 45.00, categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Vaso+Cachepot" },
-      ];
-
-      const mockCarrinho = [
-        { id: 105, nome: "Suporte Headset RGB", preco: 60.00, qtd: 1, img: "https://placehold.co/100x100/292524/a8a29e?text=Headset" },
-        { id: 106, nome: "Miniatura RPG Orc", preco: 25.00, qtd: 2, img: "https://placehold.co/100x100/292524/a8a29e?text=Orc" },
       ];
 
       if (isLoading) return null;
@@ -139,14 +178,12 @@
       const renderTabDados = () => (
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
           <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Meus Dados Pessoais</h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <InputField label="Nome Completo" defaultValue={userData.nome} />
             <InputField label="CPF" placeholder="000.000.000-00" />
             <InputField label="E-mail" type="email" defaultValue={userData.email} />
             <InputField label="Telefone / WhatsApp" placeholder="(00) 90000-0000" />
           </div>
-
           <h3 className="text-xl font-bold text-stone-50 mb-4">Endereço de Entrega</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <InputField label="CEP" placeholder="00000-000" />
@@ -157,13 +194,6 @@
             <div className="md:col-span-2"><InputField label="Cidade" /></div>
             <InputField label="Estado" />
           </div>
-
-          <h3 className="text-xl font-bold text-stone-50 mb-4">Segurança</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <InputField label="Nova Senha" type="password" placeholder="Deixe em branco para não alterar" />
-            <InputField label="Confirmar Nova Senha" type="password" placeholder="Deixe em branco para não alterar" />
-          </div>
-
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-stone-800">
             <label className="flex items-center gap-3 cursor-pointer group">
               <input type="checkbox" className="hidden" checked={isEmpresarial} onChange={(e) => setIsEmpresarial(e.target.checked)} />
@@ -191,9 +221,7 @@
               </button>
             </div>
           )}
-          
           <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Dados da Empresa</h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <InputField label="CNPJ" placeholder="00.000.000/0000-00" />
             <InputField label="Razão Social" placeholder="Sua Empresa LTDA" />
@@ -202,18 +230,6 @@
             <InputField label="E-mail Comercial" type="email" placeholder="contato@empresa.com.br" />
             <InputField label="Telefone Fixo / Comercial" placeholder="(00) 0000-0000" />
           </div>
-
-          <h3 className="text-xl font-bold text-stone-50 mb-4">Endereço Comercial</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <InputField label="CEP Comercial" placeholder="00000-000" />
-            <div className="md:col-span-2"><InputField label="Logradouro Comercial" placeholder="Rua / Avenida" /></div>
-            <InputField label="Número" />
-            <InputField label="Complemento" />
-            <InputField label="Bairro" />
-            <div className="md:col-span-2"><InputField label="Cidade" /></div>
-            <InputField label="Estado" />
-          </div>
-
           <div className="flex justify-end pt-6 border-t border-stone-800">
             <button className="w-full sm:w-auto bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-3 rounded-lg font-bold transition-colors">
               Salvar Dados Empresariais
@@ -225,7 +241,6 @@
       const renderTabPedidos = () => (
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
           <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Histórico de Pedidos</h2>
-          
           <div className="space-y-4">
             {mockPedidos.map((pedido, i) => (
               <div key={i} className="border border-stone-800 rounded-lg p-5 hover:border-stone-700 transition-colors bg-stone-900/50">
@@ -267,7 +282,6 @@
               Solicitar Novo
             </a>
           </div>
-          
           <div className="space-y-4">
             {mockOrcamentos.map((orc, i) => (
               <div key={i} className="border border-stone-800 rounded-lg p-5 hover:border-amber-900/30 transition-colors bg-stone-900/50">
@@ -302,7 +316,6 @@
       const renderTabFavoritos = () => (
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
           <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Meus Favoritos</h2>
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {mockFavoritos.map((produto) => (
               <div key={produto.id} className="bg-stone-900 rounded-lg border border-stone-800 overflow-hidden group flex flex-col hover:border-amber-700/50 transition-colors relative">
@@ -331,61 +344,70 @@
       );
 
       const renderTabCarrinho = () => {
-        const subtotal = mockCarrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
         return (
           <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
             <h2 className="text-2xl font-bold text-stone-50 mb-6 border-b border-stone-800 pb-4">Carrinho Atual</h2>
             
             <div className="flex flex-col lg:flex-row gap-8">
               <div className="flex-1 space-y-4">
-                {mockCarrinho.map((item, i) => (
-                  <div key={i} className="flex gap-4 p-4 border border-stone-800 rounded-lg bg-stone-900/30 relative pr-10">
-                    <button className="absolute top-4 right-4 text-stone-500 hover:text-red-500 transition-colors">
-                      <X size={20} />
-                    </button>
-                    <div className="w-20 h-20 bg-stone-900 rounded overflow-hidden flex-shrink-0">
-                      <img src={item.img} alt={item.nome} className="w-full h-full object-cover opacity-80" />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-between">
-                      <h3 className="font-bold text-stone-200">{item.nome}</h3>
-                      <div className="flex justify-between items-center mt-2">
-                        <div className="flex items-center gap-3 bg-stone-950 border border-stone-800 rounded-md px-2 py-1">
-                          <button className="text-stone-400 hover:text-stone-50">-</button>
-                          <span className="text-sm font-bold w-4 text-center text-stone-200">{item.qtd}</span>
-                          <button className="text-stone-400 hover:text-stone-50">+</button>
+                {cart.length === 0 ? (
+                  <div className="py-12 flex flex-col items-center justify-center text-stone-500 border border-stone-800 border-dashed rounded-lg">
+                    <ShoppingCart size={48} className="opacity-50 mb-4" />
+                    <p>O seu carrinho está vazio.</p>
+                    <a href="catalogo.html" className="mt-4 text-amber-500 font-bold hover:underline">Ir para o Catálogo</a>
+                  </div>
+                ) : (
+                  cart.map(item => (
+                    <div key={item.id} className="flex gap-4 p-4 border border-stone-800 rounded-lg bg-stone-900/30 relative pr-10">
+                      <button onClick={() => handleRemoveFromCart(item.id)} className="absolute top-4 right-4 text-stone-500 hover:text-red-500 transition-colors">
+                        <Trash2 size={20} />
+                      </button>
+                      <div className="w-20 h-20 bg-stone-900 rounded overflow-hidden flex-shrink-0">
+                        <img src={item.img} alt={item.nome} className="w-full h-full object-cover opacity-80" />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between">
+                        <h3 className="font-bold text-stone-200">{item.nome}</h3>
+                        <div className="flex justify-between items-center mt-2">
+                          <div className="flex items-center gap-3 bg-stone-950 border border-stone-800 rounded-md px-2 py-1">
+                            <button onClick={() => handleUpdateQtd(item.id, -1)} className="text-stone-400 hover:text-stone-50"><Minus size={16}/></button>
+                            <span className="text-sm font-bold w-6 text-center text-stone-200">{item.qtd}</span>
+                            <button onClick={() => handleUpdateQtd(item.id, 1)} className="text-stone-400 hover:text-stone-50"><Plus size={16}/></button>
+                          </div>
+                          <span className="font-bold text-amber-500">{formatarPreco(item.preco * item.qtd)}</span>
                         </div>
-                        <span className="font-bold text-amber-500">{formatarPreco(item.preco * item.qtd)}</span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
 
-              <div className="w-full lg:w-80 flex-shrink-0">
-                <div className="bg-stone-900 border border-stone-800 rounded-lg p-6 sticky top-28">
-                  <h3 className="font-bold text-lg text-stone-50 mb-4">Resumo do Pedido</h3>
-                  <div className="space-y-3 mb-6">
-                    <div className="flex justify-between text-stone-400 text-sm">
-                      <span>Subtotal ({mockCarrinho.length} itens)</span>
-                      <span>{formatarPreco(subtotal)}</span>
+              {cart.length > 0 && (
+                <div className="w-full lg:w-80 flex-shrink-0">
+                  <div className="bg-stone-900 border border-stone-800 rounded-lg p-6 sticky top-28">
+                    <h3 className="font-bold text-lg text-stone-50 mb-4">Resumo do Pedido</h3>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex justify-between text-stone-400 text-sm">
+                        <span>Subtotal ({cartTotalItens} itens)</span>
+                        <span>{formatarPreco(cartSubtotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-stone-400 text-sm">
+                        <span>Frete</span>
+                        <span>A calcular</span>
+                      </div>
+                      <div className="border-t border-stone-800 pt-3 flex justify-between items-center">
+                        <span className="font-bold text-stone-200">Total Previsto</span>
+                        <span className="font-bold text-xl text-amber-500">{formatarPreco(cartSubtotal)}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-stone-400 text-sm">
-                      <span>Frete</span>
-                      <span>A calcular</span>
-                    </div>
-                    <div className="border-t border-stone-800 pt-3 flex justify-between items-center">
-                      <span className="font-bold text-stone-200">Total Previsto</span>
-                      <span className="font-bold text-xl text-amber-500">{formatarPreco(subtotal)}</span>
-                    </div>
+                    <button className="w-full bg-amber-700 hover:bg-amber-600 text-stone-50 py-3 rounded-lg font-bold transition-colors mb-3">
+                      Finalizar Compra
+                    </button>
+                    <a href="catalogo.html" className="block text-center text-sm text-stone-400 hover:text-amber-500 transition-colors">
+                      Continuar Comprando
+                    </a>
                   </div>
-                  <button className="w-full bg-amber-700 hover:bg-amber-600 text-stone-50 py-3 rounded-lg font-bold transition-colors mb-3">
-                    Finalizar Compra
-                  </button>
-                  <a href="catalogo.html" className="block text-center text-sm text-stone-400 hover:text-amber-500 transition-colors">
-                    Continuar Comprando
-                  </a>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         );
@@ -432,14 +454,22 @@
               </a>
               <button onClick={() => setActiveTab('carrinho')} className="text-stone-400 hover:text-amber-500 transition-colors relative" title="Carrinho de Compras">
                 <ShoppingCart size={22} />
-                <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">2</span>
+                {cartTotalItens > 0 && (
+                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">
+                    {cartTotalItens}
+                  </span>
+                )}
               </button>
             </div>
 
             <div className="lg:hidden flex items-center gap-4">
               <button onClick={() => setActiveTab('carrinho')} className="text-stone-400 relative">
                 <ShoppingCart size={22} />
-                <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">2</span>
+                {cartTotalItens > 0 && (
+                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-stone-50 text-[10px] rounded-full flex items-center justify-center font-bold">
+                    {cartTotalItens}
+                  </span>
+                )}
               </button>
               <button className="p-2 text-stone-400" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
