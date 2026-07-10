@@ -148,7 +148,7 @@
               <a href="#diferencial" className="hover:text-amber-500 transition-colors">Diferenciais</a>
               <a href="catalogo.html" className="hover:text-amber-500 transition-colors">Catálogo Completo</a>
               <a href="#solucoes-empresariais" className="text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-1"><Building2 size={16}/> Soluções Empresariais</a>
-              <a href="#orcamento" className="hover:text-amber-500 transition-colors">Orçamentos</a>
+              <a href="orcamento.html" className="hover:text-amber-500 transition-colors">Orçamentos</a>
             </div>
 
             <div className="hidden lg:flex items-center gap-6">
@@ -190,7 +190,7 @@
                 <a href="#diferencial" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Diferenciais</a>
                 <a href="catalogo.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Catálogo Completo</a>
                 <a href="#solucoes-empresariais" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-amber-600 hover:text-amber-500 transition-colors flex items-center gap-2"><Building2 size={20}/> Soluções Empresariais</a>
-                <a href="#orcamento" onClick={() => setIsMenuOpen(false)} className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Orçamentos</a>
+                <a href="orcamento.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Orçamentos</a>
             </div>
           )}
 
@@ -248,14 +248,14 @@
                   <div className="flex justify-between text-stone-300 mb-2">
                     <span>Subtotal</span>
                     <span>{formatarPreco(cartSubtotal)}</span>
+                    <div className="border-t border-stone-800 pt-3 flex justify-between items-center">
+                      <span className="font-bold text-stone-200">Total Previsto</span>
+                      <span className="font-bold text-xl text-amber-500">{formatarPreco(cartSubtotal)}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between font-bold text-lg text-stone-50 mb-6">
-                    <span>Total</span>
-                    <span className="text-amber-500">{formatarPreco(cartSubtotal)}</span>
-                  </div>
-                  <a href="checkout.html" className="block w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-3 text-center rounded-lg transition-colors">
-  Finalizar Compra
-</a>
+                  <a href="checkout.html" className="block text-center w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-3 rounded-lg transition-colors">
+                    Finalizar Compra
+                  </a>
                   <a href="perfil.html" className="block text-center mt-4 text-sm text-stone-400 hover:text-stone-200 transition-colors">
                     Ver no Meu Perfil
                   </a>
@@ -374,31 +374,31 @@
           </section>
 
           {/* Soluções Empresariais B2B */}
-          <section id="solucoes-empresariais" className="px-6 py-20 bg-stone-950 border-t border-stone-800 relative overflow-hidden">
-            <div className="absolute left-0 top-0 w-1/2 h-full bg-gradient-to-r from-amber-900/5 to-transparent pointer-events-none"></div>
-            
-            <div className="max-w-7xl mx-auto relative z-10">
-              <div className="mb-12">
-                <div className="inline-flex items-center gap-2 bg-amber-900/30 text-amber-500 px-3 py-1 rounded-full text-sm font-bold border border-amber-900/50 mb-4">
-                  <Briefcase size={16} /> B2B & Corporativo
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-stone-50">Soluções Empresariais</h2>
-                <p className="text-stone-400 mt-2 max-w-2xl">Atendimento focado em volume, padronização e exclusividade para alavancar a marca da sua empresa.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-stone-900 rounded-xl border border-stone-800 p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:border-amber-700/50 transition-colors">
-                  <div className="w-full md:w-48 aspect-video md:aspect-square bg-stone-950 rounded-lg flex items-center justify-center border border-stone-800 flex-shrink-0 overflow-hidden">
-                    <img src="https://placehold.co/600x400/292524/a8a29e?text=Lote+Chaveiros" alt="Brinde" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex flex-col justify-center">
+                      <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">Brinde</span>
+                      <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">Chaveiros com Logo (Lote)</h3>
+                      <p className="text-stone-400 text-sm mb-4 leading-relaxed">Ideal para eventos e brindes de final de ano.</p>
+                      <div>
+                        <a href="orcamento.html" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
+                          Solicitar Cotação <ChevronRight size={16} />
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-col justify-center">
-                    <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">Brinde</span>
-                    <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">Chaveiros com Logo (Lote)</h3>
-                    <p className="text-stone-400 text-sm mb-4 leading-relaxed">Ideal para eventos e brindes de final de ano.</p>
-                    <div>
-                      <a href="#orcamento" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
-                        Solicitar Cotação <ChevronRight size={16} />
-                      </a>
+                  
+                  <div className="bg-stone-900 rounded-xl border border-stone-800 p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:border-amber-700/50 transition-colors">
+                    <div className="w-full md:w-48 aspect-video md:aspect-square bg-stone-950 rounded-lg flex items-center justify-center border border-stone-800 flex-shrink-0 overflow-hidden">
+                      <img src="https://placehold.co/600x400/292524/a8a29e?text=Trofeu+Personalizado" alt="Premiação" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <span className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-2">Premiação</span>
+                      <h3 className="font-bold text-xl text-stone-50 mb-2 group-hover:text-amber-500 transition-colors">Troféu Corporativo</h3>
+                      <p className="text-stone-400 text-sm mb-4 leading-relaxed">Premiações internas e hackathons. Design exclusivo.</p>
+                      <div>
+                        <a href="orcamento.html" className="inline-flex items-center gap-1 text-sm font-bold text-stone-300 hover:text-stone-50 bg-stone-800 px-4 py-2 rounded transition-colors">
+                          Solicitar Cotação <ChevronRight size={16} />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -435,12 +435,12 @@
                 Seja um brinde em lote para um evento ou uma peça técnica de reposição. Envie os detalhes e faremos o orçamento.
               </p>
               
-              <button 
-                onClick={() => alert("Simulação: Abriria o formulário de orçamentos ou modal.")}
+              <a 
+                href="orcamento.html"
                 className="inline-flex items-center justify-center bg-amber-700 hover:bg-amber-600 text-stone-50 px-8 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg shadow-amber-900/20"
               >
                 Acessar Formulário de Orçamento
-              </button>
+              </a>
               <p className="text-stone-500 text-sm mt-4">Resposta comercial em até 24h úteis.</p>
             </div>
           </section>
