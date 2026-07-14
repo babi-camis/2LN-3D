@@ -22,7 +22,7 @@
   <div id="root" class="flex-1 flex flex-col"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     // --- Ícones ---
     const IconWrapper = ({ children, size = 24, className = "" }) => (
@@ -47,6 +47,9 @@
     const Trash2 = (p) => <IconWrapper {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></IconWrapper>;
     const Plus = (p) => <IconWrapper {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconWrapper>;
     const Minus = (p) => <IconWrapper {...p}><line x1="5" y1="12" x2="19" y2="12"/></IconWrapper>;
+    const MessageSquare = (p) => <IconWrapper {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></IconWrapper>;
+    const Send = (p) => <IconWrapper {...p}><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></IconWrapper>;
+    const Paperclip = (p) => <IconWrapper {...p}><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></IconWrapper>;
 
     const InputField = ({ label, type = "text", placeholder, defaultValue }) => (
       <div className="flex flex-col gap-1.5">
@@ -71,6 +74,19 @@
       // Estado dinâmico
       const [cart, setCart] = useState([]);
       const [orcamentos, setOrcamentos] = useState([]);
+
+      // Estado do Chat de Orçamentos
+      const [chatOrcamento, setChatOrcamento] = useState(null);
+      const [chatMessages, setChatMessages] = useState([]);
+      const [newMessage, setNewMessage] = useState("");
+      const chatEndRef = useRef(null);
+
+      // Scroll para o fim do chat sempre que houver nova mensagem
+      useEffect(() => {
+        if (chatEndRef.current) {
+          chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      }, [chatMessages]);
 
       // Proteção de Rota e Carregamento de Dados
       useEffect(() => {
@@ -148,6 +164,47 @@
           }
           return p;
         }));
+      };
+
+      // Abre o Chat do Orçamento selecionado
+      const openChat = (orc) => {
+        setChatOrcamento(orc);
+        // Simula histórico de mensagens baseando-se no estado atual
+        const messages = [
+          { id: 1, sender: 'admin', text: `Olá! Recebemos a sua solicitação de orçamento para: ${orc.projeto}.`, time: '09:00' }
+        ];
+        
+        if (orc.valor !== 'Aguardando') {
+           messages.push({ id: 2, sender: 'admin', text: `Analisámos o seu pedido e o valor preliminar estimado é de ${orc.valor}. Podemos seguir para a fase de impressão?`, time: '14:30' });
+        }
+        
+        setChatMessages(messages);
+      };
+
+      // Envia uma nova mensagem no Chat
+      const handleSendMessage = (e) => {
+        e.preventDefault();
+        if (!newMessage.trim()) return;
+
+        const msg = {
+          id: Date.now(),
+          sender: 'user',
+          text: newMessage,
+          time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        };
+
+        setChatMessages(prev => [...prev, msg]);
+        setNewMessage("");
+
+        // Resposta automática simulada após 2 segundos
+        setTimeout(() => {
+          setChatMessages(prev => [...prev, {
+            id: Date.now() + 1,
+            sender: 'admin',
+            text: 'Recebemos a sua mensagem. Iremos responder o mais breve possível!',
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          }]);
+        }, 2000);
       };
 
       // --- MOCKS DE DADOS ---
@@ -284,7 +341,7 @@
       );
 
       const renderTabOrcamentos = () => (
-        <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
+        <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8 relative">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-stone-800 pb-4 gap-4">
             <h2 className="text-2xl font-bold text-stone-50">Meus Orçamentos</h2>
             <a href="orcamento.html" className="bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded text-sm font-bold transition-colors border border-stone-700">
@@ -315,14 +372,68 @@
                       <span className="text-stone-500 text-sm block mb-1">Proposta Comercial:</span>
                       <p className="font-bold text-stone-200">{orc.valor}</p>
                     </div>
-                    <button className="bg-stone-800 hover:bg-stone-700 text-stone-50 px-4 py-2 rounded text-sm font-medium transition-colors">
-                      Acessar Chat / Arquivos
+                    <button onClick={() => openChat(orc)} className="bg-stone-800 hover:bg-amber-700 text-stone-50 px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2">
+                      <MessageSquare size={16} /> Acessar Chat
                     </button>
                   </div>
                 </div>
               ))
             )}
           </div>
+
+          {/* Modal de Chat */}
+          {chatOrcamento && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+              <div className="bg-stone-900 border border-stone-800 rounded-xl w-full max-w-2xl h-[85vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+                {/* Header do Chat */}
+                <div className="p-4 border-b border-stone-800 flex justify-between items-center bg-stone-950">
+                  <div>
+                    <h3 className="font-bold text-stone-50 text-lg flex items-center gap-2">
+                      Chat: {chatOrcamento.id}
+                    </h3>
+                    <p className="text-xs text-stone-400">{chatOrcamento.projeto}</p>
+                  </div>
+                  <button onClick={() => setChatOrcamento(null)} className="text-stone-400 hover:text-white transition-colors p-2 bg-stone-900 rounded-full">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Área de Mensagens */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-stone-900/50">
+                  {chatMessages.map((msg) => (
+                    <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`p-3 max-w-[80%] rounded-lg ${
+                        msg.sender === 'user' 
+                          ? 'bg-amber-700 text-white rounded-tr-none' 
+                          : 'bg-stone-800 text-stone-200 rounded-tl-none border border-stone-700'
+                      }`}>
+                        <p className="text-sm">{msg.text}</p>
+                      </div>
+                      <span className="text-[10px] text-stone-500 mt-1">{msg.time}</span>
+                    </div>
+                  ))}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Área de Input */}
+                <form onSubmit={handleSendMessage} className="p-4 border-t border-stone-800 bg-stone-950 flex gap-2 items-center">
+                  <button type="button" className="p-2 text-stone-400 hover:text-amber-500 transition-colors" title="Anexar ficheiro">
+                    <Paperclip size={20} />
+                  </button>
+                  <input 
+                    type="text" 
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Escreva a sua mensagem..." 
+                    className="flex-1 bg-stone-900 border border-stone-800 rounded-lg px-4 py-2.5 text-sm text-stone-200 outline-none focus:border-amber-600 transition-colors"
+                  />
+                  <button type="submit" disabled={!newMessage.trim()} className="p-2.5 bg-amber-700 hover:bg-amber-600 disabled:bg-stone-800 disabled:text-stone-500 text-white rounded-lg transition-colors flex items-center justify-center">
+                    <Send size={18} />
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       );
 
@@ -438,7 +549,7 @@
       return (
         <React.Fragment>
           {/* Navegação Global */}
-          <nav className="sticky top-0 z-50 bg-stone-950/90 backdrop-blur-md border-b border-stone-800 px-6 py-4 flex justify-between items-center transition-all duration-300">
+          <nav className="sticky top-0 z-40 bg-stone-950/90 backdrop-blur-md border-b border-stone-800 px-6 py-4 flex justify-between items-center transition-all duration-300">
             <div className="flex items-center gap-3">
               <a href="index.html">
                 <img 
@@ -492,7 +603,7 @@
 
           {/* Menu Mobile Global */}
           {isMenuOpen && (
-            <div className="lg:hidden fixed inset-0 top-[88px] z-40 bg-stone-950 border-b border-stone-800 px-6 py-4 flex flex-col gap-4">
+            <div className="lg:hidden fixed inset-0 top-[88px] z-30 bg-stone-950 border-b border-stone-800 px-6 py-4 flex flex-col gap-4">
                 <a href="index.html#destaques" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Destaques</a>
                 <a href="index.html#diferencial" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Diferenciais</a>
                 <a href="catalogo.html" className="text-lg font-semibold text-stone-400 hover:text-amber-500 transition-colors">Catálogo Completo</a>
