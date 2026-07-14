@@ -68,10 +68,11 @@
       const [isLoggedOut, setIsLoggedOut] = useState(false);
       const [isLoading, setIsLoading] = useState(true);
       
-      // Estado dinâmico do carrinho
+      // Estado dinâmico
       const [cart, setCart] = useState([]);
+      const [orcamentos, setOrcamentos] = useState([]);
 
-      // Proteção de Rota e Carregamento do Carrinho
+      // Proteção de Rota e Carregamento de Dados
       useEffect(() => {
         try {
           const storedData = localStorage.getItem('2ln_userData');
@@ -85,6 +86,19 @@
           if (savedCart) {
             setCart(JSON.parse(savedCart));
           }
+
+          // Carrega os orçamentos criados no formulário
+          const savedOrcamentos = localStorage.getItem('2ln_orcamentos');
+          if (savedOrcamentos) {
+            setOrcamentos(JSON.parse(savedOrcamentos));
+          } else {
+            // Mock Data Inicial caso o utilizador não tenha pedido nada
+            setOrcamentos([
+              { id: '#ORC-089', data: '05/07/2026', projeto: 'Lote 100 Troféus Hackathon', status: 'Aguardando Aprovação', statusColor: 'text-amber-500 bg-amber-500/10 border-amber-500/20', valor: 'R$ 3.500,00' },
+              { id: '#ORC-082', data: '15/05/2026', projeto: 'Peça de Reposição Engrenagem', status: 'Concluído', statusColor: 'text-green-500 bg-green-500/10 border-green-500/20', valor: 'R$ 250,00' }
+            ]);
+          }
+
         } catch (error) {
           console.warn("Falha ao aceder ao localStorage.", error);
           setIsLoggedOut(true);
@@ -141,10 +155,10 @@
         { id: '#1045', data: '12/07/2026', status: 'Entregue', statusColor: 'text-green-500 bg-green-500/10 border-green-500/20', total: 145.90, itens: 'Action Figure Cyberpunk, Chaveiro Geek' },
         { id: '#1032', data: '28/06/2026', status: 'Em Produção', statusColor: 'text-amber-500 bg-amber-500/10 border-amber-500/20', total: 89.90, itens: 'Luminária Lua 3D' },
       ];
-
-      const mockOrcamentos = [
-        { id: '#ORC-089', data: '05/07/2026', projeto: 'Lote 100 Troféus Hackathon', status: 'Aguardando Aprovação', statusColor: 'text-amber-500 bg-amber-500/10 border-amber-500/20', valor: 'R$ 3.500,00' },
-        { id: '#ORC-082', data: '15/05/2026', projeto: 'Peça de Reposição Engrenagem', status: 'Concluído', statusColor: 'text-green-500 bg-green-500/10 border-green-500/20', valor: 'R$ 250,00' },
+      // --- MOCKS DE DADOS RESTANTES ---
+      const mockPedidos = [
+        { id: '#1045', data: '12/07/2026', status: 'Entregue', statusColor: 'text-green-500 bg-green-500/10 border-green-500/20', total: 145.90, itens: 'Action Figure Cyberpunk, Chaveiro Geek' },
+        { id: '#1032', data: '28/06/2026', status: 'Em Produção', statusColor: 'text-amber-500 bg-amber-500/10 border-amber-500/20', total: 89.90, itens: 'Luminária Lua 3D' },
       ];
 
       const mockFavoritos = [
@@ -278,37 +292,41 @@
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-stone-800 pb-4 gap-4">
             <h2 className="text-2xl font-bold text-stone-50">Meus Orçamentos</h2>
-            <a href="index.html#orcamento" className="bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded text-sm font-bold transition-colors border border-stone-700">
+            <a href="orcamento.html" className="bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded text-sm font-bold transition-colors border border-stone-700">
               Solicitar Novo
             </a>
           </div>
           <div className="space-y-4">
-            {mockOrcamentos.map((orc, i) => (
-              <div key={i} className="border border-stone-800 rounded-lg p-5 hover:border-amber-900/30 transition-colors bg-stone-900/50">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-stone-400 text-sm">{orc.id}</span>
-                      <span className="text-stone-600 text-sm">•</span>
-                      <span className="text-stone-400 text-sm">{orc.data}</span>
+            {orcamentos.length === 0 ? (
+              <p className="text-stone-400 py-4 text-center">Nenhum orçamento solicitado até ao momento.</p>
+            ) : (
+              orcamentos.map((orc, i) => (
+                <div key={i} className="border border-stone-800 rounded-lg p-5 hover:border-amber-900/30 transition-colors bg-stone-900/50">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-stone-400 text-sm">{orc.id}</span>
+                        <span className="text-stone-600 text-sm">•</span>
+                        <span className="text-stone-400 text-sm">{orc.data}</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-stone-50 line-clamp-1">{orc.projeto}</h3>
                     </div>
-                    <h3 className="text-lg font-bold text-stone-50">{orc.projeto}</h3>
+                    <div className={`px-3 py-1 rounded-full text-xs font-bold border ${orc.statusColor}`}>
+                      {orc.status}
+                    </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold border ${orc.statusColor}`}>
-                    {orc.status}
+                  <div className="border-t border-stone-800 pt-4 flex justify-between items-center">
+                    <div>
+                      <span className="text-stone-500 text-sm block mb-1">Proposta Comercial:</span>
+                      <p className="font-bold text-stone-200">{orc.valor}</p>
+                    </div>
+                    <button className="bg-stone-800 hover:bg-stone-700 text-stone-50 px-4 py-2 rounded text-sm font-medium transition-colors">
+                      Acessar Chat / Arquivos
+                    </button>
                   </div>
                 </div>
-                <div className="border-t border-stone-800 pt-4 flex justify-between items-center">
-                  <div>
-                    <span className="text-stone-500 text-sm block mb-1">Proposta Comercial:</span>
-                    <p className="font-bold text-stone-200">{orc.valor}</p>
-                  </div>
-                  <button className="bg-stone-800 hover:bg-stone-700 text-stone-50 px-4 py-2 rounded text-sm font-medium transition-colors">
-                    Acessar Chat / Arquivos
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       );
@@ -399,9 +417,9 @@
                         <span className="font-bold text-xl text-amber-500">{formatarPreco(cartSubtotal)}</span>
                       </div>
                     </div>
-                   <a href="checkout.html" className="block w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-3 text-center rounded-lg transition-colors">
-  Finalizar Compra
-</a>
+                    <button className="w-full bg-amber-700 hover:bg-amber-600 text-stone-50 py-3 rounded-lg font-bold transition-colors mb-3">
+                      Finalizar Compra
+                    </button>
                     <a href="catalogo.html" className="block text-center text-sm text-stone-400 hover:text-amber-500 transition-colors">
                       Continuar Comprando
                     </a>
