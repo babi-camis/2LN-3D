@@ -84,9 +84,9 @@
       ]);
 
       const [produtos, setProdutos] = useState([
-        { id: 101, nome: "Action Figure Cyberpunk", preco: 149.90, estoque: 15, categoria: "Geek" },
-        { id: 102, nome: "Suporte para Notebook", preco: 75.00, estoque: 8, categoria: "Setup" },
-        { id: 103, nome: "Luminária Lua 3D", preco: 89.90, estoque: 0, categoria: "Decoração" },
+        { id: 101, nome: "Action Figure Cyberpunk", preco: 149.90, precoDesconto: 129.90, estoque: 15, categoria: "Geek", isDestaque: true, isB2B: false },
+        { id: 102, nome: "Troféu Corporativo", preco: 250.00, precoDesconto: null, estoque: 50, categoria: "Soluções Empresariais", isDestaque: false, isB2B: true },
+        { id: 103, nome: "Luminária Lua 3D", preco: 89.90, precoDesconto: null, estoque: 0, categoria: "Decoração", isDestaque: true, isB2B: false },
       ]);
 
       const [cupons, setCupons] = useState([
@@ -104,7 +104,7 @@
         if (item) {
           setFormData({ ...item });
         } else {
-          if (type === 'produto') setFormData({ nome: '', preco: '', estoque: '', categoria: 'Geek' });
+          if (type === 'produto') setFormData({ nome: '', preco: '', precoDesconto: '', estoque: '', categoria: 'Geek', isDestaque: false, isB2B: false });
           if (type === 'cupom') setFormData({ codigo: '', desconto: '', validade: '', usos: 0, status: 'Ativo' });
         }
         
@@ -113,10 +113,19 @@
 
       const handleSave = () => {
         if (modalType === 'produto') {
+          const produtoParseado = {
+            ...formData,
+            preco: parseFloat(formData.preco),
+            precoDesconto: formData.precoDesconto ? parseFloat(formData.precoDesconto) : null,
+            estoque: parseInt(formData.estoque),
+            isB2B: formData.isB2B || false,
+            isDestaque: formData.isDestaque || false
+          };
+
           if (editingItem) {
-            setProdutos(produtos.map(p => p.id === editingItem.id ? { ...p, ...formData, preco: parseFloat(formData.preco), estoque: parseInt(formData.estoque) } : p));
+            setProdutos(produtos.map(p => p.id === editingItem.id ? { ...p, ...produtoParseado } : p));
           } else {
-            setProdutos([...produtos, { ...formData, id: Date.now(), preco: parseFloat(formData.preco), estoque: parseInt(formData.estoque) }]);
+            setProdutos([...produtos, { ...produtoParseado, id: Date.now() }]);
           }
         }
         
@@ -147,8 +156,8 @@
       };
 
       const handleFormChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        const { name, value, type, checked } = e.target;
+        setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
       };
 
       // --- RENDERIZADORES DE ABAS ---
@@ -242,7 +251,7 @@
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-2xl font-bold text-stone-50">Estoque e Produtos</h2>
-              <p className="text-stone-400 text-sm">Faça a gestão do catálogo do varejo.</p>
+              <p className="text-stone-400 text-sm">Faça a gestão do catálogo e configurações dos produtos.</p>
             </div>
             <button 
               onClick={() => openModal('produto')}
@@ -258,7 +267,7 @@
                 <thead className="bg-stone-950 border-b border-stone-800 text-stone-400">
                   <tr>
                     <th className="p-4 font-medium">ID</th>
-                    <th className="p-4 font-medium">Produto</th>
+                    <th className="p-4 font-medium min-w-[200px]">Produto</th>
                     <th className="p-4 font-medium">Categoria</th>
                     <th className="p-4 font-medium">Preço</th>
                     <th className="p-4 font-medium">Estoque</th>
@@ -269,17 +278,34 @@
                   {produtos.map(p => (
                     <tr key={p.id} className="hover:bg-stone-800/50 transition-colors">
                       <td className="p-4 text-stone-500">#{p.id}</td>
-                      <td className="p-4 font-bold text-stone-200">{p.nome}</td>
+                      <td className="p-4">
+                        <div className="font-bold text-stone-200">{p.nome}</div>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {p.isB2B && <span className="text-[10px] bg-stone-800 text-stone-400 px-1.5 py-0.5 rounded border border-stone-700">B2B</span>}
+                          {p.isDestaque && <span className="text-[10px] bg-amber-900/30 text-amber-500 border border-amber-900/50 px-1.5 py-0.5 rounded">Destaque</span>}
+                        </div>
+                      </td>
                       <td className="p-4 text-stone-400">{p.categoria}</td>
-                      <td className="p-4 text-amber-500 font-bold">{formatarPreco(p.preco)}</td>
+                      <td className="p-4">
+                        {p.precoDesconto ? (
+                          <div className="flex flex-col">
+                            <span className="text-stone-500 line-through text-xs">{formatarPreco(p.preco)}</span>
+                            <span className="text-amber-500 font-bold">{formatarPreco(p.precoDesconto)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-amber-500 font-bold">{formatarPreco(p.preco)}</span>
+                        )}
+                      </td>
                       <td className="p-4">
                         <Badge type={p.estoque > 5 ? 'success' : p.estoque > 0 ? 'warning' : 'danger'}>
                           {p.estoque} un
                         </Badge>
                       </td>
-                      <td className="p-4 text-right flex justify-end gap-2">
-                        <button onClick={() => openModal('produto', p)} className="text-stone-400 hover:text-blue-500 transition-colors p-1"><Edit size={18}/></button>
-                        <button onClick={() => handleDelete('produto', p.id)} className="text-stone-400 hover:text-red-500 transition-colors p-1"><Trash2 size={18}/></button>
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => openModal('produto', p)} className="text-stone-400 hover:text-blue-500 transition-colors p-1" title="Editar"><Edit size={18}/></button>
+                          <button onClick={() => handleDelete('produto', p.id)} className="text-stone-400 hover:text-red-500 transition-colors p-1" title="Excluir"><Trash2 size={18}/></button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -359,24 +385,43 @@
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-stone-400">Preço (R$)</label>
+                  <label className="text-sm font-medium text-stone-400">Preço Original (R$)</label>
                   <input type="number" step="0.01" name="preco" value={formData.preco || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" required />
                 </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-stone-400">Preço com Desconto (R$)</label>
+                  <input type="number" step="0.01" name="precoDesconto" value={formData.precoDesconto || ''} onChange={handleFormChange} placeholder="Opcional" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-stone-400">Estoque</label>
                   <input type="number" name="estoque" value={formData.estoque || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" required />
                 </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-stone-400">Categoria</label>
+                  <select name="categoria" value={formData.categoria || 'Geek'} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
+                    <option value="Geek">Geek</option>
+                    <option value="Setup">Setup</option>
+                    <option value="Decoração">Decoração</option>
+                    <option value="Utilitário">Utilitário</option>
+                    <option value="Soluções Empresariais">Soluções Empresariais</option>
+                  </select>
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-stone-400">Categoria</label>
-                <select name="categoria" value={formData.categoria || 'Geek'} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
-                  <option value="Geek">Geek</option>
-                  <option value="Setup">Setup</option>
-                  <option value="Decoração">Decoração</option>
-                  <option value="Utilitário">Utilitário</option>
-                </select>
+              
+              <div className="flex gap-6 py-2">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" name="isB2B" checked={formData.isB2B || false} onChange={handleFormChange} className="w-4 h-4 accent-amber-600 bg-stone-900 border-stone-800 rounded" />
+                  <span className="text-sm text-stone-300 group-hover:text-stone-50 transition-colors">Produto B2B</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" name="isDestaque" checked={formData.isDestaque || false} onChange={handleFormChange} className="w-4 h-4 accent-amber-600 bg-stone-900 border-stone-800 rounded" />
+                  <span className="text-sm text-stone-300 group-hover:text-stone-50 transition-colors">Destaque na Home</span>
+                </label>
               </div>
-              <div className="space-y-2 pt-2">
+
+              <div className="space-y-2 pt-2 border-t border-stone-800">
                 <label className="text-sm font-medium text-stone-400">Imagens do Produto</label>
                 <div className="border-2 border-dashed border-stone-800 rounded-xl p-6 flex flex-col items-center justify-center text-stone-500 hover:border-amber-600 hover:bg-stone-900/50 transition-colors cursor-pointer relative overflow-hidden group">
                   <input type="file" multiple accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" title="" />
@@ -548,7 +593,7 @@
                   </button>
                 </div>
                 
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                   {renderModalContent()}
                 </div>
                 
