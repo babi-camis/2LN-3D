@@ -43,6 +43,7 @@
     const MenuIcon = (p) => <IconWrapper {...p}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconWrapper>;
     const X = (p) => <IconWrapper {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
     const MessageSquare = (p) => <IconWrapper {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></IconWrapper>;
+    const UploadCloud = (p) => <IconWrapper {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconWrapper>;
 
     const Badge = ({ children, type }) => {
       const colors = {
@@ -374,6 +375,15 @@
                   <option value="Decoração">Decoração</option>
                   <option value="Utilitário">Utilitário</option>
                 </select>
+              </div>
+              <div className="space-y-2 pt-2">
+                <label className="text-sm font-medium text-stone-400">Imagens do Produto</label>
+                <div className="border-2 border-dashed border-stone-800 rounded-xl p-6 flex flex-col items-center justify-center text-stone-500 hover:border-amber-600 hover:bg-stone-900/50 transition-colors cursor-pointer relative overflow-hidden group">
+                  <input type="file" multiple accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" title="" />
+                  <UploadCloud size={32} className="mb-2 group-hover:text-amber-500 transition-colors" />
+                  <p className="text-sm font-medium text-stone-300 group-hover:text-stone-50">Clique ou arraste imagens aqui</p>
+                  <p className="text-xs mt-1 text-stone-500">Permitido anexar múltiplas fotos (PNG, JPG)</p>
+                </div>
               </div>
             </>
           );
