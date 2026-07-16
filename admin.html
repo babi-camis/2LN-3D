@@ -44,6 +44,8 @@
     const X = (p) => <IconWrapper {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
     const MessageSquare = (p) => <IconWrapper {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></IconWrapper>;
     const UploadCloud = (p) => <IconWrapper {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconWrapper>;
+    const RefreshCcw = (p) => <IconWrapper {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></IconWrapper>;
+    const CheckCircle = (p) => <IconWrapper {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconWrapper>;
 
     const Badge = ({ children, type }) => {
       const colors = {
@@ -68,6 +70,10 @@
       const [modalType, setModalType] = useState(''); // 'produto', 'cupom', 'pedido', 'orcamento'
       const [editingItem, setEditingItem] = useState(null);
       const [formData, setFormData] = useState({});
+
+      // Estado para automação InfinitePay e Notificações
+      const [isSyncing, setIsSyncing] = useState(false);
+      const [toast, setToast] = useState(null);
 
       // Filtro de Categoria
       const [filtroCategoriaProduto, setFiltroCategoriaProduto] = useState('Todas');
@@ -163,17 +169,50 @@
         setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
       };
 
+      const showToast = (mensagem) => {
+        setToast(mensagem);
+        setTimeout(() => setToast(null), 3000);
+      };
+
+      const handleSyncInfinitePay = () => {
+        setIsSyncing(true);
+        
+        // Simula a comunicação webhooks com a API da InfinitePay
+        setTimeout(() => {
+          setPedidos(prev => prev.map(p => {
+            // Transforma pagamentos pendentes em produção
+            if (p.status === 'Pagamento Pendente') {
+              return { ...p, status: 'Em Produção' };
+            }
+            return p;
+          }));
+          
+          setIsSyncing(false);
+          showToast('Sincronização com InfinitePay concluída. Pagamentos atualizados.');
+        }, 2000);
+      };
+
       // --- RENDERIZADORES DE ABAS ---
       const renderPedidos = () => (
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-2xl font-bold text-stone-50">Gestão de Pedidos</h2>
               <p className="text-stone-400 text-sm">Acompanhe e atualize o status das vendas.</p>
             </div>
-            <div className="relative hidden md:block">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
-              <input type="text" placeholder="Buscar pedido..." className="bg-stone-900 border border-stone-800 text-stone-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-amber-600 outline-none" />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button 
+                onClick={handleSyncInfinitePay} 
+                disabled={isSyncing}
+                className="bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-stone-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 border border-stone-700 w-full sm:w-auto"
+              >
+                <RefreshCcw size={16} className={isSyncing ? "animate-spin text-amber-500" : "text-amber-500"} />
+                {isSyncing ? 'A verificar gateway...' : 'Sync InfinitePay'}
+              </button>
+              <div className="relative hidden md:block">
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
+                <input type="text" placeholder="Buscar pedido..." className="bg-stone-900 border border-stone-800 text-stone-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-amber-600 outline-none" />
+              </div>
             </div>
           </div>
 
@@ -535,8 +574,14 @@
       };
 
       return (
-        <div className="flex flex-col md:flex-row w-full min-h-screen">
+        <div className="flex flex-col md:flex-row w-full min-h-screen relative">
           
+          {/* Toast Notification */}
+          <div className={`fixed bottom-6 right-6 z-[60] bg-stone-800 border border-stone-700 text-stone-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transition-all duration-300 transform ${toast ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
+            <CheckCircle size={20} className="text-green-500" />
+            <span className="font-medium text-sm">{toast}</span>
+          </div>
+
           {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between p-4 bg-stone-950 border-b border-stone-800 sticky top-0 z-20">
             <img src="assest/WhatsApp Image 2026-07-08 at 12.15.52.jpeg" alt="Logo" className="h-8 object-contain mix-blend-screen" onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x40/292524/a8a29e?text=Admin"; }} />
