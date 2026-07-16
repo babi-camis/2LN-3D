@@ -61,37 +61,96 @@
     function App() {
       const [activeTab, setActiveTab] = useState('pedidos');
       const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+      
+      // Controle do Modal
       const [isModalOpen, setIsModalOpen] = useState(false);
-      const [modalType, setModalType] = useState(''); // 'produto' ou 'cupom'
+      const [modalType, setModalType] = useState(''); // 'produto', 'cupom', 'pedido', 'orcamento'
+      const [editingItem, setEditingItem] = useState(null);
+      const [formData, setFormData] = useState({});
 
-      const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+      const formatarPreco = (valor) => `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
 
-      // --- MOCKS DE DADOS ---
-      const [pedidos] = useState([
+      // --- ESTADOS DE DADOS ---
+      const [pedidos, setPedidos] = useState([
         { id: '#1045', cliente: 'João da Silva', data: '16/07/2026', status: 'Em Produção', total: 145.90 },
         { id: '#1046', cliente: 'Maria Oliveira', data: '16/07/2026', status: 'Pagamento Pendente', total: 89.90 },
         { id: '#1044', cliente: 'Empresa XYZ', data: '14/07/2026', status: 'Entregue', total: 1250.00 },
       ]);
 
-      const [orcamentos] = useState([
-        { id: '#ORC-090', cliente: 'Carlos Santos', projeto: 'Peça de reposição', status: 'Novo', data: '16/07/2026' },
-        { id: '#ORC-089', cliente: 'Tech Solutions B2B', projeto: 'Lote 100 Troféus', status: 'Em Negociação', data: '15/07/2026' },
+      const [orcamentos, setOrcamentos] = useState([
+        { id: '#ORC-090', cliente: 'Carlos Santos', projeto: 'Peça de reposição', status: 'Novo', data: '16/07/2026', valor: 'Pendente' },
+        { id: '#ORC-089', cliente: 'Tech Solutions B2B', projeto: 'Lote 100 Troféus', status: 'Em Negociação', data: '15/07/2026', valor: 'R$ 3.500,00' },
       ]);
 
-      const [produtos] = useState([
+      const [produtos, setProdutos] = useState([
         { id: 101, nome: "Action Figure Cyberpunk", preco: 149.90, estoque: 15, categoria: "Geek" },
         { id: 102, nome: "Suporte para Notebook", preco: 75.00, estoque: 8, categoria: "Setup" },
         { id: 103, nome: "Luminária Lua 3D", preco: 89.90, estoque: 0, categoria: "Decoração" },
       ]);
 
-      const [cupons] = useState([
-        { id: 1, codigo: 'BEMVINDO10', desconto: '10%', usos: 45, validade: '31/12/2026', status: 'Ativo' },
-        { id: 2, codigo: 'FRETEGRATIS', desconto: 'Frete', usos: 12, validade: '31/07/2026', status: 'Ativo' },
-        { id: 3, codigo: 'BLACKFRIDAY', desconto: '30%', usos: 150, validade: '30/11/2025', status: 'Expirado' },
+      const [cupons, setCupons] = useState([
+        { id: 1, codigo: 'BEMVINDO10', desconto: '10%', usos: 45, validade: '2026-12-31', status: 'Ativo' },
+        { id: 2, codigo: 'FRETEGRATIS', desconto: 'Frete', usos: 12, validade: '2026-07-31', status: 'Ativo' },
+        { id: 3, codigo: 'BLACKFRIDAY', desconto: '30%', usos: 150, validade: '2025-11-30', status: 'Expirado' },
       ]);
 
+      // --- LÓGICA DE CRUD ---
+      const openModal = (type, item = null) => {
+        setModalType(type);
+        setEditingItem(item);
+        
+        // Define o estado inicial do formulário baseado em criar novo ou editar existente
+        if (item) {
+          setFormData({ ...item });
+        } else {
+          if (type === 'produto') setFormData({ nome: '', preco: '', estoque: '', categoria: 'Geek' });
+          if (type === 'cupom') setFormData({ codigo: '', desconto: '', validade: '', usos: 0, status: 'Ativo' });
+        }
+        
+        setIsModalOpen(true);
+      };
+
+      const handleSave = () => {
+        if (modalType === 'produto') {
+          if (editingItem) {
+            setProdutos(produtos.map(p => p.id === editingItem.id ? { ...p, ...formData, preco: parseFloat(formData.preco), estoque: parseInt(formData.estoque) } : p));
+          } else {
+            setProdutos([...produtos, { ...formData, id: Date.now(), preco: parseFloat(formData.preco), estoque: parseInt(formData.estoque) }]);
+          }
+        }
+        
+        if (modalType === 'cupom') {
+          if (editingItem) {
+            setCupons(cupons.map(c => c.id === editingItem.id ? { ...c, ...formData } : c));
+          } else {
+            setCupons([...cupons, { ...formData, id: Date.now() }]);
+          }
+        }
+
+        if (modalType === 'pedido') {
+          setPedidos(pedidos.map(p => p.id === editingItem.id ? { ...p, status: formData.status } : p));
+        }
+
+        if (modalType === 'orcamento') {
+          setOrcamentos(orcamentos.map(o => o.id === editingItem.id ? { ...o, status: formData.status, valor: formData.valor } : o));
+        }
+
+        setIsModalOpen(false);
+      };
+
+      const handleDelete = (type, id) => {
+        if (!window.confirm('Tem a certeza que deseja excluir este item?')) return;
+        
+        if (type === 'produto') setProdutos(produtos.filter(p => p.id !== id));
+        if (type === 'cupom') setCupons(cupons.filter(c => c.id !== id));
+      };
+
+      const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+      };
+
       // --- RENDERIZADORES DE ABAS ---
-      
       const renderPedidos = () => (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
@@ -99,7 +158,7 @@
               <h2 className="text-2xl font-bold text-stone-50">Gestão de Pedidos</h2>
               <p className="text-stone-400 text-sm">Acompanhe e atualize o status das vendas.</p>
             </div>
-            <div className="relative">
+            <div className="relative hidden md:block">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
               <input type="text" placeholder="Buscar pedido..." className="bg-stone-900 border border-stone-800 text-stone-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-amber-600 outline-none" />
             </div>
@@ -131,7 +190,7 @@
                         </Badge>
                       </td>
                       <td className="p-4 text-right">
-                        <button className="text-stone-400 hover:text-amber-500 transition-colors p-1"><Edit size={18}/></button>
+                        <button onClick={() => openModal('pedido', p)} className="text-stone-400 hover:text-amber-500 transition-colors p-1" title="Editar Status"><Edit size={18}/></button>
                       </td>
                     </tr>
                   ))}
@@ -154,20 +213,20 @@
           <div className="grid grid-cols-1 gap-4">
             {orcamentos.map(orc => (
               <div key={orc.id} className="bg-stone-900 border border-stone-800 rounded-xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-stone-700 transition-colors">
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
                     <span className="font-bold text-stone-200">{orc.id}</span>
                     <Badge type={orc.status === 'Novo' ? 'success' : 'warning'}>{orc.status}</Badge>
                     <span className="text-stone-500 text-xs">{orc.data}</span>
                   </div>
                   <h3 className="text-stone-400 text-sm">Projeto: <span className="text-stone-300 font-medium">{orc.projeto}</span></h3>
-                  <p className="text-stone-500 text-sm">Cliente: {orc.cliente}</p>
+                  <p className="text-stone-500 text-sm">Cliente: {orc.cliente} <span className="mx-2">•</span> Valor Atual: <span className="font-bold text-amber-500">{orc.valor}</span></p>
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
-                  <button className="flex-1 md:flex-none bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 border border-stone-700">
+                  <button onClick={() => openModal('orcamento', orc)} className="flex-1 md:flex-none bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 border border-stone-700">
                     <Edit size={16} /> Detalhes
                   </button>
-                  <button className="flex-1 md:flex-none bg-amber-700 hover:bg-amber-600 text-stone-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                  <button onClick={() => alert('Esta funcionalidade abriria o chat para responder ao cliente.')} className="flex-1 md:flex-none bg-amber-700 hover:bg-amber-600 text-stone-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2">
                     <MessageSquare size={16} /> Responder
                   </button>
                 </div>
@@ -185,7 +244,7 @@
               <p className="text-stone-400 text-sm">Faça a gestão do catálogo do varejo.</p>
             </div>
             <button 
-              onClick={() => { setModalType('produto'); setIsModalOpen(true); }}
+              onClick={() => openModal('produto')}
               className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               <Plus size={18} /> Novo Produto
@@ -218,11 +277,16 @@
                         </Badge>
                       </td>
                       <td className="p-4 text-right flex justify-end gap-2">
-                        <button className="text-stone-400 hover:text-blue-500 transition-colors p-1"><Edit size={18}/></button>
-                        <button className="text-stone-400 hover:text-red-500 transition-colors p-1"><Trash2 size={18}/></button>
+                        <button onClick={() => openModal('produto', p)} className="text-stone-400 hover:text-blue-500 transition-colors p-1"><Edit size={18}/></button>
+                        <button onClick={() => handleDelete('produto', p.id)} className="text-stone-400 hover:text-red-500 transition-colors p-1"><Trash2 size={18}/></button>
                       </td>
                     </tr>
                   ))}
+                  {produtos.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-stone-500">Nenhum produto cadastrado.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -238,7 +302,7 @@
               <p className="text-stone-400 text-sm">Crie códigos de desconto para o checkout.</p>
             </div>
             <button 
-              onClick={() => { setModalType('cupom'); setIsModalOpen(true); }}
+              onClick={() => openModal('cupom')}
               className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               <Plus size={18} /> Novo Cupom
@@ -269,13 +333,128 @@
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-stone-800 flex justify-end gap-2">
-                  <button className="text-stone-400 hover:text-red-500 transition-colors p-1"><Trash2 size={18}/></button>
+                  <button onClick={() => openModal('cupom', c)} className="text-stone-400 hover:text-blue-500 transition-colors p-1"><Edit size={18}/></button>
+                  <button onClick={() => handleDelete('cupom', c.id)} className="text-stone-400 hover:text-red-500 transition-colors p-1"><Trash2 size={18}/></button>
                 </div>
               </div>
             ))}
+            {cupons.length === 0 && (
+              <div className="col-span-1 md:col-span-3 text-center text-stone-500 p-8 bg-stone-900 rounded-xl border border-stone-800 border-dashed">
+                Nenhum cupom cadastrado.
+              </div>
+            )}
           </div>
         </div>
       );
+
+      // --- RENDERIZADOR DO MODAL GLOBAL ---
+      const renderModalContent = () => {
+        if (modalType === 'produto') {
+          return (
+            <>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-stone-400">Nome do Produto</label>
+                <input type="text" name="nome" value={formData.nome || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-stone-400">Preço (R$)</label>
+                  <input type="number" step="0.01" name="preco" value={formData.preco || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-stone-400">Estoque</label>
+                  <input type="number" name="estoque" value={formData.estoque || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" required />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-stone-400">Categoria</label>
+                <select name="categoria" value={formData.categoria || 'Geek'} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
+                  <option value="Geek">Geek</option>
+                  <option value="Setup">Setup</option>
+                  <option value="Decoração">Decoração</option>
+                  <option value="Utilitário">Utilitário</option>
+                </select>
+              </div>
+            </>
+          );
+        }
+
+        if (modalType === 'cupom') {
+          return (
+            <>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-stone-400">Código do Cupom (Ex: BEMVINDO10)</label>
+                <input type="text" name="codigo" value={formData.codigo || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 font-mono uppercase outline-none focus:border-amber-600" required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-stone-400">Desconto (% ou Valor)</label>
+                  <input type="text" name="desconto" value={formData.desconto || ''} onChange={handleFormChange} placeholder="Ex: 10% ou 50.00" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-stone-400">Validade</label>
+                  <input type="date" name="validade" value={formData.validade || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-400 outline-none focus:border-amber-600" required />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-stone-400">Status</label>
+                <select name="status" value={formData.status || 'Ativo'} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
+                  <option value="Ativo">Ativo</option>
+                  <option value="Expirado">Expirado</option>
+                </select>
+              </div>
+            </>
+          );
+        }
+
+        if (modalType === 'pedido') {
+          return (
+            <>
+              <div className="p-4 bg-stone-950 border border-stone-800 rounded-lg mb-4">
+                <p className="text-sm text-stone-400">Pedido: <span className="text-stone-200 font-bold">{formData.id}</span></p>
+                <p className="text-sm text-stone-400">Cliente: <span className="text-stone-200">{formData.cliente}</span></p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-stone-400">Atualizar Status</label>
+                <select name="status" value={formData.status || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
+                  <option value="Pagamento Pendente">Pagamento Pendente</option>
+                  <option value="Pago / Aprovado">Pago / Aprovado</option>
+                  <option value="Em Produção">Em Produção</option>
+                  <option value="Enviado">Enviado</option>
+                  <option value="Entregue">Entregue</option>
+                  <option value="Cancelado">Cancelado</option>
+                </select>
+              </div>
+            </>
+          );
+        }
+
+        if (modalType === 'orcamento') {
+          return (
+            <>
+              <div className="p-4 bg-stone-950 border border-stone-800 rounded-lg mb-4">
+                <p className="text-sm text-stone-400">Orçamento: <span className="text-stone-200 font-bold">{formData.id}</span></p>
+                <p className="text-sm text-stone-400">Projeto: <span className="text-stone-200">{formData.projeto}</span></p>
+              </div>
+              <div className="space-y-1 mb-4">
+                <label className="text-sm font-medium text-stone-400">Status da Cotação</label>
+                <select name="status" value={formData.status || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
+                  <option value="Novo">Novo</option>
+                  <option value="Em Negociação">Em Negociação</option>
+                  <option value="Aguardando Aprovação">Aguardando Aprovação</option>
+                  <option value="Aprovado (Em Produção)">Aprovado (Em Produção)</option>
+                  <option value="Concluído">Concluído</option>
+                  <option value="Recusado">Recusado</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-stone-400">Valor da Proposta (Deixe Pendente se estiver a analisar)</label>
+                <input type="text" name="valor" value={formData.valor || ''} onChange={handleFormChange} placeholder="Ex: R$ 3.500,00 ou Pendente" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" />
+              </div>
+            </>
+          );
+        }
+      };
 
       return (
         <div className="flex flex-col md:flex-row w-full min-h-screen">
@@ -346,13 +525,13 @@
             </div>
           </main>
 
-          {/* Modal Generico para Formulários */}
+          {/* Modal Generico e Dinâmico */}
           {isModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
               <div className="bg-stone-900 border border-stone-800 rounded-xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200">
                 <div className="p-5 border-b border-stone-800 flex justify-between items-center">
-                  <h3 className="font-bold text-stone-50 text-lg">
-                    {modalType === 'produto' ? 'Cadastrar Novo Produto' : 'Criar Novo Cupom'}
+                  <h3 className="font-bold text-stone-50 text-lg capitalize">
+                    {editingItem ? `Editar ${modalType}` : `Adicionar Novo ${modalType}`}
                   </h3>
                   <button onClick={() => setIsModalOpen(false)} className="text-stone-400 hover:text-white">
                     <X size={20} />
@@ -360,52 +539,12 @@
                 </div>
                 
                 <div className="p-6 space-y-4">
-                  {modalType === 'produto' ? (
-                    <>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-stone-400">Nome do Produto</label>
-                        <input type="text" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium text-stone-400">Preço (R$)</label>
-                          <input type="number" step="0.01" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium text-stone-400">Estoque</label>
-                          <input type="number" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-stone-400">Categoria</label>
-                        <select className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
-                          <option>Geek</option><option>Setup</option><option>Decoração</option><option>Utilitário</option>
-                        </select>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-stone-400">Código do Cupom (Ex: BEMVINDO10)</label>
-                        <input type="text" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 font-mono uppercase outline-none focus:border-amber-600" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium text-stone-400">Desconto (% ou Valor)</label>
-                          <input type="text" placeholder="Ex: 10% ou 50.00" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600" />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-sm font-medium text-stone-400">Validade</label>
-                          <input type="date" className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-400 outline-none focus:border-amber-600" />
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  {renderModalContent()}
                 </div>
                 
                 <div className="p-5 border-t border-stone-800 bg-stone-950/50 flex justify-end gap-3 rounded-b-xl">
                   <button onClick={() => setIsModalOpen(false)} className="px-5 py-2 rounded-lg text-sm font-bold text-stone-400 hover:text-stone-200 transition-colors">Cancelar</button>
-                  <button onClick={() => setIsModalOpen(false)} className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-6 py-2 rounded-lg text-sm font-bold transition-colors">Gravar</button>
+                  <button onClick={handleSave} className="bg-amber-700 hover:bg-amber-600 text-stone-50 px-6 py-2 rounded-lg text-sm font-bold transition-colors">Guardar Alterações</button>
                 </div>
               </div>
             </div>
