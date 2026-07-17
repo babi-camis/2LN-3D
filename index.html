@@ -72,45 +72,47 @@
         }
 
         const handleStorageChange = (e) => {
-          if (e.key === '2ln_cart') {
-            try { setCart(JSON.parse(e.newValue) || []); } catch(err) {}
-          }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-      }, []);
-
-      // Atualizar localStorage sempre que o carrinho mudar
-      useEffect(() => {
-        localStorage.setItem('2ln_cart', JSON.stringify(cart));
-      }, [cart]);
-
-      const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
-      const cartTotalItens = cart.reduce((acc, item) => acc + item.qtd, 0);
-      const cartSubtotal = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
-
-      const showToast = (mensagem) => {
-        setToast(mensagem);
-        setTimeout(() => setToast(null), 3000);
+        if (e.key === '2ln_cart') {
+          try { setCart(JSON.parse(e.newValue) || []); } catch(err) {}
+        }
       };
 
-      const handleAddToCart = (produto) => {
-        setCart(prev => {
-          const existe = prev.find(p => p.id === produto.id);
-          if (existe) {
-            return prev.map(p => p.id === produto.id ? { ...p, qtd: p.qtd + 1 } : p);
-          }
-          return [...prev, { ...produto, qtd: 1 }];
-        });
-        showToast(`${produto.nome} adicionado ao carrinho!`);
-      };
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
 
-      const handleRemoveFromCart = (id) => {
-        setCart(prev => prev.filter(p => p.id !== id));
-      };
+    // Atualizar localStorage sempre que o carrinho mudar
+    useEffect(() => {
+      localStorage.setItem('2ln_cart', JSON.stringify(cart));
+    }, [cart]);
 
-      const handleUpdateQtd = (id, delta) => {
+    const formatarPreco = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+    const cartTotalItens = cart.reduce((acc, item) => acc + item.qtd, 0);
+    const cartSubtotal = cart.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+
+    const showToast = (mensagem) => {
+      setToast(mensagem);
+      setTimeout(() => setToast(null), 3000);
+    };
+
+    const handleAddToCart = (produto) => {
+      const precoVenda = produto.precoDesconto ? produto.precoDesconto : produto.preco;
+      
+      setCart(prev => {
+        const existe = prev.find(p => p.id === produto.id);
+        if (existe) {
+          return prev.map(p => p.id === produto.id ? { ...p, qtd: p.qtd + 1 } : p);
+        }
+        return [...prev, { ...produto, preco: precoVenda, precoOriginal: produto.preco, qtd: 1 }];
+      });
+      showToast(`${produto.nome} adicionado ao carrinho!`);
+    };
+
+    const handleRemoveFromCart = (id) => {
+      setCart(prev => prev.filter(p => p.id !== id));
+    };
+
+    const handleUpdateQtd = (id, delta) => {
         setCart(prev => prev.map(p => {
           if (p.id === id) {
             const novaQtd = p.qtd + delta;
@@ -128,14 +130,14 @@
       ];
 
       const previewProdutos = [
-        { id: 101, nome: "Action Figure Cyberpunk", preco: 149.90, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Figure+Cyberpunk" },
-        { id: 102, nome: "Suporte para Notebook", preco: 75.00, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+Notebook" },
-        { id: 103, nome: "Luminária Lua 3D", preco: 89.90, categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Luminaria+Lua" },
-        { id: 104, nome: "Vaso Cachepot", preco: 45.00, categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Vaso+Cachepot" },
-        { id: 105, nome: "Suporte Headset RGB", preco: 60.00, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+RGB" },
-        { id: 106, nome: "Miniatura RPG Orc", preco: 25.00, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Miniatura+Orc" },
-        { id: 107, nome: "Organizador Gaveta", preco: 30.00, categoria: "Utilitário", img: "https://placehold.co/400x400/292524/a8a29e?text=Organizador" },
-        { id: 108, nome: "Chaveiro Personalizado", preco: 15.00, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Chaveiro" },
+        { id: 101, nome: "Action Figure Cyberpunk", preco: 149.90, precoDesconto: 129.90, estoque: 15, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Figure+Cyberpunk", cores: [{id: 1, tipo: 'hex', valor: '#ff007f'}, {id: 2, tipo: 'hex', valor: '#00f3ff'}] },
+        { id: 102, nome: "Suporte para Notebook", preco: 75.00, precoDesconto: null, estoque: 8, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+Notebook", cores: [{id: 3, tipo: 'hex', valor: '#1c1917'}] },
+        { id: 103, nome: "Luminária Lua 3D", preco: 89.90, precoDesconto: null, estoque: 0, categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Luminaria+Lua", cores: [{id: 4, tipo: 'hex', valor: '#ffffff'}, {id: 5, tipo: 'hex', valor: '#fff5e6'}] },
+        { id: 104, nome: "Vaso Cachepot", preco: 45.00, precoDesconto: 35.00, estoque: 20, categoria: "Decoração", img: "https://placehold.co/400x400/292524/a8a29e?text=Vaso+Cachepot", cores: [{id: 6, tipo: 'hex', valor: '#d6d3d1'}] },
+        { id: 105, nome: "Suporte Headset RGB", preco: 60.00, precoDesconto: null, estoque: 5, categoria: "Setup", img: "https://placehold.co/400x400/292524/a8a29e?text=Suporte+RGB", cores: [] },
+        { id: 106, nome: "Miniatura RPG Orc", preco: 25.00, precoDesconto: null, estoque: 30, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Miniatura+Orc", cores: [{id: 7, tipo: 'hex', valor: '#166534'}] },
+        { id: 107, nome: "Organizador Gaveta", preco: 30.00, precoDesconto: null, estoque: 10, categoria: "Utilitário", img: "https://placehold.co/400x400/292524/a8a29e?text=Organizador", cores: [] },
+        { id: 108, nome: "Chaveiro Personalizado", preco: 15.00, precoDesconto: 10.00, estoque: 50, categoria: "Geek", img: "https://placehold.co/400x400/292524/a8a29e?text=Chaveiro", cores: [] },
       ];
 
       return (
@@ -328,17 +330,49 @@
                   <div key={produto.id} className="snap-start min-w-[260px] md:min-w-[280px] bg-stone-950 rounded-lg border border-stone-800 overflow-hidden group flex-shrink-0 hover:border-amber-700/30 transition-colors flex flex-col">
                     <div className="aspect-square bg-stone-900 relative flex items-center justify-center border-b border-stone-800 overflow-hidden">
                       <img src={produto.img} alt={produto.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-50 group-hover:opacity-80" />
-                      <div className="absolute top-3 left-3 bg-amber-900/80 text-amber-100 text-xs font-bold px-2 py-1 rounded border border-amber-700">
-                        Mais Vendido
+                      <div className="absolute top-3 left-3 flex flex-col gap-2">
+                        <div className="bg-amber-900/80 text-amber-100 text-[10px] uppercase font-bold px-2 py-1 rounded border border-amber-700 w-max">
+                          Mais Vendido
+                        </div>
+                        {produto.precoDesconto && (
+                          <div className="bg-red-600/90 text-white text-[10px] uppercase font-bold px-2 py-1 rounded w-max">
+                            {Math.round((1 - produto.precoDesconto / produto.preco) * 100)}% OFF
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="p-5 flex-1 flex flex-col justify-between">
-                      <h3 className="font-semibold text-lg text-stone-100 mb-4 line-clamp-2">{produto.nome}</h3>
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-xl text-amber-500">{formatarPreco(produto.preco)}</span>
-                        <button onClick={() => handleAddToCart(produto)} className="text-stone-50 bg-stone-800 hover:bg-amber-700 px-3 py-1.5 rounded text-sm font-medium transition-colors">
-                          Adicionar
-                        </button>
+                      <div>
+                        <h3 className="font-semibold text-lg text-stone-100 mb-1 line-clamp-2">{produto.nome}</h3>
+                        {produto.cores && produto.cores.length > 0 && (
+                          <div className="flex gap-1.5 mb-3">
+                            {produto.cores.map(c => (
+                              c.tipo === 'hex' && <span key={c.id} title={c.nome} className="w-3.5 h-3.5 rounded-full border border-stone-600 shadow-sm" style={{ backgroundColor: c.valor }}></span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-end mt-4">
+                        <div className="flex flex-col">
+                          {produto.precoDesconto ? (
+                            <>
+                              <span className="text-stone-500 line-through text-xs">{formatarPreco(produto.preco)}</span>
+                              <span className="font-bold text-xl text-amber-500">{formatarPreco(produto.precoDesconto)}</span>
+                            </>
+                          ) : (
+                            <span className="font-bold text-xl text-amber-500">{formatarPreco(produto.preco)}</span>
+                          )}
+                        </div>
+                        
+                        {produto.estoque === 0 ? (
+                          <button disabled className="text-stone-500 bg-stone-900 border border-stone-800 px-3 py-1.5 rounded text-sm font-medium cursor-not-allowed">
+                            Esgotado
+                          </button>
+                        ) : (
+                          <button onClick={() => handleAddToCart(produto)} className="text-stone-50 bg-stone-800 hover:bg-amber-700 px-3 py-1.5 rounded text-sm font-medium transition-colors">
+                            Adicionar
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
