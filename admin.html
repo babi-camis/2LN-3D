@@ -44,9 +44,9 @@
     const X = (p) => <IconWrapper {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>;
     const MessageSquare = (p) => <IconWrapper {...p}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></IconWrapper>;
     const UploadCloud = (p) => <IconWrapper {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconWrapper>;
-    const RefreshCcw = (p) => <IconWrapper {...p}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></IconWrapper>;
-    const CheckCircle = (p) => <IconWrapper {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconWrapper>;
-    const ImageIcon = (p) => <IconWrapper {...p}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></IconWrapper>;
+    const User = (p) => <IconWrapper {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconWrapper>;
+    const MapPin = (p) => <IconWrapper {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconWrapper>;
+    const Printer = (p) => <IconWrapper {...p}><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></IconWrapper>;
 
     const Badge = ({ children, type }) => {
       const colors = {
@@ -81,9 +81,60 @@
 
       // --- ESTADOS DE DADOS ---
       const [pedidos, setPedidos] = useState([
-        { id: '#1045', cliente: 'João da Silva', data: '16/07/2026', status: 'Em Produção', total: 145.90 },
-        { id: '#1046', cliente: 'Maria Oliveira', data: '16/07/2026', status: 'Pagamento Pendente', total: 89.90 },
-        { id: '#1044', cliente: 'Empresa XYZ', data: '14/07/2026', status: 'Entregue', total: 1250.00 },
+        { 
+          id: '#1045', 
+          cliente: 'João da Silva', 
+          cpf: '111.222.333-44',
+          email: 'joao@email.com',
+          telefone: '(43) 99999-1111',
+          data: '16/07/2026', 
+          status: 'Em Produção', 
+          prazoEnvio: '22/07/2026',
+          endereco: { logradouro: 'Rua das Orquídeas', numero: '123', complemento: 'Apto 42', bairro: 'Centro', cidade: 'Londrina', estado: 'PR', cep: '86010-000' },
+          itens: [
+            { nome: 'Action Figure Cyberpunk', qtd: 1, preco: 129.90 },
+          ],
+          subtotal: 129.90,
+          frete: 16.00,
+          desconto: 0,
+          total: 145.90 
+        },
+        { 
+          id: '#1046', 
+          cliente: 'Maria Oliveira', 
+          cpf: '555.666.777-88',
+          email: 'maria@email.com',
+          telefone: '(11) 98888-2222',
+          data: '16/07/2026', 
+          status: 'Pagamento Pendente', 
+          prazoEnvio: 'Aguardando Pagamento',
+          endereco: { logradouro: 'Av. Paulista', numero: '1000', complemento: 'Sala 15', bairro: 'Bela Vista', cidade: 'São Paulo', estado: 'SP', cep: '01310-100' },
+          itens: [
+            { nome: 'Luminária Lua 3D', qtd: 1, preco: 89.90 },
+          ],
+          subtotal: 89.90,
+          frete: 0.00,
+          desconto: 0,
+          total: 89.90 
+        },
+        { 
+          id: '#1044', 
+          cliente: 'Empresa XYZ', 
+          cpf: '00.111.222/0001-33',
+          email: 'compras@xyz.com.br',
+          telefone: '(41) 3333-4444',
+          data: '14/07/2026', 
+          status: 'Entregue', 
+          prazoEnvio: '16/07/2026 (Realizado)',
+          endereco: { logradouro: 'Rua das Indústrias', numero: '500', complemento: 'Galpão 2', bairro: 'CIC', cidade: 'Curitiba', estado: 'PR', cep: '81000-000' },
+          itens: [
+            { nome: 'Chaveiros com Logo (Lote 100un)', qtd: 5, preco: 250.00 },
+          ],
+          subtotal: 1250.00,
+          frete: 0.00,
+          desconto: 0,
+          total: 1250.00 
+        },
       ]);
 
       const [orcamentos, setOrcamentos] = useState([
@@ -597,20 +648,85 @@
         if (modalType === 'pedido') {
           return (
             <>
-              <div className="p-4 bg-stone-950 border border-stone-800 rounded-lg mb-4">
-                <p className="text-sm text-stone-400">Pedido: <span className="text-stone-200 font-bold">{formData.id}</span></p>
-                <p className="text-sm text-stone-400">Cliente: <span className="text-stone-200">{formData.cliente}</span></p>
+              <div className="flex justify-between items-center bg-stone-950 border border-stone-800 rounded-lg p-4 mb-2">
+                <div>
+                  <p className="text-sm text-stone-400">Pedido: <span className="text-stone-200 font-bold">{formData.id}</span></p>
+                  <p className="text-sm text-stone-400">Data: <span className="text-stone-300">{formData.data}</span></p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-stone-500 block mb-1">Prazo de Envio</span>
+                  <span className="font-bold text-amber-500">{formData.prazoEnvio || 'Não definido'}</span>
+                </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-stone-400">Atualizar Status</label>
-                <select name="status" value={formData.status || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
-                  <option value="Pagamento Pendente">Pagamento Pendente</option>
-                  <option value="Pago / Aprovado">Pago / Aprovado</option>
-                  <option value="Em Produção">Em Produção</option>
-                  <option value="Enviado">Enviado</option>
-                  <option value="Entregue">Entregue</option>
-                  <option value="Cancelado">Cancelado</option>
-                </select>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                {/* Info Cliente */}
+                <div className="bg-stone-950 border border-stone-800 rounded-lg p-4">
+                  <h4 className="font-bold text-stone-200 mb-3 border-b border-stone-800 pb-2 flex items-center gap-2">
+                    <User size={16} className="text-amber-500"/> Cliente
+                  </h4>
+                  <p className="text-sm text-stone-300 mb-1"><span className="text-stone-500">Nome:</span> {formData.cliente}</p>
+                  <p className="text-sm text-stone-300 mb-1"><span className="text-stone-500">Doc:</span> {formData.cpf || 'Não informado'}</p>
+                  <p className="text-sm text-stone-300 mb-1"><span className="text-stone-500">E-mail:</span> {formData.email || 'Não informado'}</p>
+                  <p className="text-sm text-stone-300"><span className="text-stone-500">Tel:</span> {formData.telefone || 'Não informado'}</p>
+                </div>
+                
+                {/* Info Entrega */}
+                <div className="bg-stone-950 border border-stone-800 rounded-lg p-4">
+                  <h4 className="font-bold text-stone-200 mb-3 border-b border-stone-800 pb-2 flex items-center gap-2">
+                    <MapPin size={16} className="text-amber-500"/> Endereço de Entrega
+                  </h4>
+                  {formData.endereco ? (
+                    <>
+                      <p className="text-sm text-stone-300 mb-1">{formData.endereco.logradouro}, {formData.endereco.numero} {formData.endereco.complemento}</p>
+                      <p className="text-sm text-stone-300 mb-1">{formData.endereco.bairro}</p>
+                      <p className="text-sm text-stone-300 mb-1">{formData.endereco.cidade} - {formData.endereco.estado}</p>
+                      <p className="text-sm text-stone-300">CEP: {formData.endereco.cep}</p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-stone-500">Endereço não informado.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Resumo Financeiro e Itens */}
+              <div className="bg-stone-950 border border-stone-800 rounded-lg p-4 mb-4">
+                <h4 className="font-bold text-stone-200 mb-3 border-b border-stone-800 pb-2 flex items-center gap-2">
+                  <Package size={16} className="text-amber-500"/> Resumo do Pedido
+                </h4>
+                <div className="space-y-2 mb-3 max-h-32 overflow-y-auto pr-2 scrollbar-hide">
+                  {formData.itens && formData.itens.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center text-sm">
+                      <span className="text-stone-300">{item.qtd}x {item.nome}</span>
+                      <span className="text-stone-400">{formatarPreco(item.preco * item.qtd)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-stone-800 pt-3 space-y-1.5">
+                  <div className="flex justify-between text-xs text-stone-400"><span>Subtotal:</span> <span>{formatarPreco(formData.subtotal || formData.total)}</span></div>
+                  <div className="flex justify-between text-xs text-stone-400"><span>Frete:</span> <span>{formatarPreco(formData.frete || 0)}</span></div>
+                  {formData.desconto > 0 && <div className="flex justify-between text-xs text-green-500"><span>Desconto:</span> <span>-{formatarPreco(formData.desconto)}</span></div>}
+                  <div className="flex justify-between text-sm font-bold text-stone-200 pt-1"><span>Total Pago:</span> <span className="text-amber-500">{formatarPreco(formData.total || 0)}</span></div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-stone-800 pt-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-stone-400">Atualizar Status</label>
+                  <select name="status" value={formData.status || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
+                    <option value="Pagamento Pendente">Pagamento Pendente</option>
+                    <option value="Pago / Aprovado">Pago / Aprovado</option>
+                    <option value="Em Produção">Em Produção</option>
+                    <option value="Enviado">Enviado</option>
+                    <option value="Entregue">Entregue</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button onClick={() => alert(`Gerando PDF de Romaneio para o pedido ${formData.id}...\n\nEste documento conterá os itens da compra e os dados do cliente para serem enviados junto com o produto na caixa.`)} className="w-full bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 p-2.5 rounded-lg text-sm font-bold transition-colors flex justify-center items-center gap-2">
+                    <Printer size={18} /> Imprimir Romaneio (Conferência)
+                  </button>
+                </div>
               </div>
             </>
           );
