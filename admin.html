@@ -86,8 +86,8 @@
       ]);
 
       const [orcamentos, setOrcamentos] = useState([
-        { id: '#ORC-090', cliente: 'Carlos Santos', projeto: 'Peça de reposição', status: 'Novo', data: '16/07/2026', valor: 'Pendente' },
-        { id: '#ORC-089', cliente: 'Tech Solutions B2B', projeto: 'Lote 100 Troféus', status: 'Em Negociação', data: '15/07/2026', valor: 'R$ 3.500,00' },
+        { id: '#ORC-090', cliente: 'Carlos Santos', email: 'carlos@exemplo.com', telefone: '5543999999999', projeto: 'Peça de reposição', descricao: 'Preciso de uma engrenagem para o meu liquidificador que quebrou. Segue o modelo 3D no link.', link: 'https://thingiverse.com/thing:123', anexos: 'engrenagem.stl', status: 'Novo', data: '16/07/2026', valor: 'Pendente' },
+        { id: '#ORC-089', cliente: 'Tech Solutions B2B', email: 'contato@techsolutions.com', telefone: '5511988888888', projeto: 'Lote 100 Troféus', descricao: 'Troféus para o hackathon anual da empresa. 15cm de altura, com a nossa logo em relevo.', link: '', anexos: 'logo_empresa.png', status: 'Em Negociação', data: '15/07/2026', valor: 'R$ 3.500,00' },
       ]);
 
       const [produtos, setProdutos] = useState([
@@ -252,9 +252,14 @@
                   <button onClick={() => openModal('orcamento', orc)} className="flex-1 md:flex-none bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 border border-stone-700">
                     <Edit size={16} /> Detalhes
                   </button>
-                  <button onClick={() => alert('Esta funcionalidade abriria o chat para responder ao cliente.')} className="flex-1 md:flex-none bg-amber-700 hover:bg-amber-600 text-stone-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2">
-                    <MessageSquare size={16} /> Responder
-                  </button>
+                  <a 
+                    href={`https://wa.me/${orc.telefone}?text=${encodeURIComponent(`Olá ${orc.cliente}, somos da 2LN 3D. Recebemos a sua solicitação de orçamento (${orc.id}) referente ao projeto: ${orc.projeto}. Podemos conversar por aqui?`)}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex-1 md:flex-none bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-green-900/20"
+                  >
+                    <MessageSquare size={16} /> WhatsApp
+                  </a>
                 </div>
               </div>
             ))}
@@ -523,12 +528,44 @@
         if (modalType === 'orcamento') {
           return (
             <>
-              <div className="p-4 bg-stone-950 border border-stone-800 rounded-lg mb-4">
-                <p className="text-sm text-stone-400">Orçamento: <span className="text-stone-200 font-bold">{formData.id}</span></p>
-                <p className="text-sm text-stone-400">Projeto: <span className="text-stone-200">{formData.projeto}</span></p>
+              <div className="bg-stone-950 border border-stone-800 rounded-lg p-4 mb-5">
+                <h4 className="font-bold text-stone-200 mb-3 border-b border-stone-800 pb-2">Detalhes da Solicitação</h4>
+                <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm mb-4">
+                  <div><span className="text-stone-500 block text-xs">ID Orçamento</span> <span className="text-stone-200 font-bold">{formData.id}</span></div>
+                  <div><span className="text-stone-500 block text-xs">Data</span> <span className="text-stone-300">{formData.data}</span></div>
+                  <div><span className="text-stone-500 block text-xs">Cliente</span> <span className="text-stone-300">{formData.cliente}</span></div>
+                  <div><span className="text-stone-500 block text-xs">Telefone / WhatsApp</span> <span className="text-stone-300">{formData.telefone || 'Não informado'}</span></div>
+                  <div className="col-span-2"><span className="text-stone-500 block text-xs">E-mail</span> <span className="text-stone-300">{formData.email || 'Não informado'}</span></div>
+                </div>
+                
+                <div className="space-y-4 text-sm border-t border-stone-800 pt-3">
+                  <div>
+                    <span className="text-stone-500 block text-xs mb-1">Projeto / Resumo</span> 
+                    <span className="text-stone-200 font-medium">{formData.projeto}</span>
+                  </div>
+                  <div>
+                    <span className="text-stone-500 block text-xs mb-1">Descrição Detalhada</span> 
+                    <p className="text-stone-300 bg-stone-900 p-3 rounded-lg border border-stone-800">{formData.descricao || 'Nenhuma descrição fornecida pelo cliente.'}</p>
+                  </div>
+                  {formData.link && (
+                    <div>
+                      <span className="text-stone-500 block text-xs mb-1">Link de Referência</span> 
+                      <a href={formData.link} target="_blank" className="text-amber-500 hover:text-amber-400 transition-colors hover:underline break-all bg-stone-900 px-3 py-2 rounded-lg border border-stone-800 inline-block w-full">{formData.link}</a>
+                    </div>
+                  )}
+                  {formData.anexos && (
+                    <div>
+                      <span className="text-stone-500 block text-xs mb-1">Ficheiro Anexado</span> 
+                      <div className="inline-flex items-center gap-2 bg-stone-900 border border-stone-800 px-3 py-2 rounded-lg text-stone-300 hover:border-amber-600 transition-colors cursor-pointer">
+                        <FileText size={16} className="text-stone-500"/> {formData.anexos}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
+
               <div className="space-y-1 mb-4">
-                <label className="text-sm font-medium text-stone-400">Status da Cotação</label>
+                <label className="text-sm font-medium text-stone-400">Atualizar Status Interno</label>
                 <select name="status" value={formData.status || ''} onChange={handleFormChange} className="w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-200 outline-none focus:border-amber-600">
                   <option value="Novo">Novo</option>
                   <option value="Em Negociação">Em Negociação</option>
